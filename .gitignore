@@ -1,0 +1,13 @@
+# 僅發布可直接執行的遊戲網站
+source-copy.docx
+題庫擷取.txt
+build-quiz.ps1
+tmp_docx/
+tmp_docx2/
+AI 能做什麼/
+
+# 本機與機密設定
+.env
+.env.*
+*.pem
+*.key

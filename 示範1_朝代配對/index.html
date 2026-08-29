@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>古今對對碰｜朝代配對</title>
+  <style>
+    :root { --ink:#3f2a1b; --red:#a7352a; --paper:#fff8df; --gold:#d99c43; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif; background:#e9d8b9 url('assets/images/adventure-map.png') center/cover fixed; }
+    body::before { content:""; position:fixed; inset:0; background:rgba(255,247,223,.55); pointer-events:none; }
+    main { position:relative; width:min(1180px,100%); margin:auto; padding:18px 18px 40px; }
+    .title { display:block; width:min(760px,100%); margin:0 auto -8px; filter:drop-shadow(0 5px 4px rgba(77,43,20,.22)); }
+    .intro { max-width:720px; margin:0 auto 18px; padding:10px 18px; text-align:center; background:rgba(255,250,233,.9); border:2px solid #b78e52; border-radius:20px; font-weight:700; box-shadow:0 3px 8px #80623b44; }
+    .board { display:grid; grid-template-columns:1.2fr .8fr; gap:20px; align-items:start; }
+    .panel { background:rgba(255,250,232,.92); border:3px solid #a96e42; border-radius:22px; padding:15px; box-shadow:0 7px 14px rgba(66,39,20,.2); }
+    h2 { margin:0 0 10px; font-size:1.2rem; text-align:center; color:#7e3024; }
+    .dynasties { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .dynasty { position:relative; min-height:225px; overflow:hidden; border:3px solid #b88a51; border-radius:16px; background:#fff9df; transition:.2s; }
+    .dynasty.over { transform:translateY(-3px); border-color:#b23a2e; box-shadow:0 0 0 4px #e7b45d88; }
+    .dynasty.done { border-color:#7c9b59; }
+    .dynasty img { width:100%; height:118px; object-fit:cover; display:block; border-bottom:2px solid #bb945e; }
+    .dynasty h3 { position:absolute; top:88px; left:10px; margin:0; padding:4px 11px; color:#fff8de; text-shadow:1px 1px 1px #55301d; background:#8f372d; border:2px solid #f3ce79; border-radius:999px; font-size:1.15rem; }
+    .dropzone { min-height:93px; padding:13px 9px 8px; display:flex; flex-direction:column; gap:7px; justify-content:center; text-align:center; }
+    .hint { color:#8d7656; font-size:.8rem; }
+    .events { min-height:320px; display:flex; flex-direction:column; gap:10px; }
+    .event { position:relative; cursor:grab; user-select:none; touch-action:manipulation; padding:15px 16px 14px; padding-left:31px; color:#4b311e; background:#f8e7b4; border:2px solid #a97942; border-radius:5px 14px 14px 5px; box-shadow:2px 3px 4px #6f4f2c44; font-weight:700; line-height:1.4; transition:transform .15s, opacity .15s; }
+    .event::before,.event::after { content:""; position:absolute; left:0; width:14px; height:100%; top:0; border-radius:50%; background:linear-gradient(90deg,#b87c39,#edc67b,#a36830); }
+    .event::after { left:auto; right:-7px; width:9px; height:calc(100% - 8px); top:4px; }
+    .event:hover { transform:rotate(-1deg) translateY(-2px); }
+    .event.dragging { opacity:.45; cursor:grabbing; }
+    .event.locked { cursor:default; background:#ecdfb1; padding:9px 8px 9px 18px; font-size:.86rem; box-shadow:none; }
+    .event.locked::after { display:none; }
+    .stamp { position:absolute; right:8px; bottom:5px; display:none; transform:rotate(-12deg); border:3px solid #ae3027; color:#ae3027; border-radius:6px; padding:2px 5px; font-weight:900; font-size:.82rem; letter-spacing:1px; opacity:.9; }
+    .locked .stamp { display:block; }
+    .status { min-height:28px; margin:13px 0 0; text-align:center; color:#7a3126; font-weight:800; }
+    .status.ok { color:#496c3a; }
+    .restart { display:block; margin:12px auto 0; padding:10px 22px; color:white; background:#9d3a2d; border:2px solid #f3c870; border-radius:999px; font:700 1rem inherit; cursor:pointer; box-shadow:0 3px #68251e; }
+    .restart:active { transform:translateY(2px); box-shadow:0 1px #68251e; }
+    .success { position:fixed; z-index:10; inset:0; display:none; place-items:center; padding:20px; background:rgba(63,42,27,.48); }
+    .success.show { display:grid; }
+    .success-card { width:min(440px,100%); text-align:center; padding:28px; border:5px solid #b77b3d; border-radius:25px; background:#fff6d7 url('assets/images/adventure-map.png') center/cover; box-shadow:0 12px 35px #30180e88; }
+    .success-card h2 { font-size:2rem; color:#9c2d25; text-shadow:1px 1px #fff1c0; }
+    .success-card p { font-weight:800; background:#fff6dbd9; padding:10px; border-radius:10px; }
+    @media (max-width:760px) { main{padding:8px 10px 28px}.title{margin-bottom:-3px}.board{grid-template-columns:1fr;gap:14px}.dynasties{grid-template-columns:repeat(2,1fr);gap:9px}.dynasty{min-height:198px}.dynasty img{height:95px}.dynasty h3{top:69px}.dropzone{min-height:80px}.panel{padding:11px}.events{min-height:0}.event{font-size:.94rem}.intro{font-size:.9rem} }
+  </style>
+</head>
+<body>
+  <a class="map-back" href="../大冒險地圖/index.html" style="position:fixed;z-index:20;top:14px;left:14px;padding:9px 14px;border:2px solid #8f5a32;border-radius:999px;background:#fff7df;color:#5a3724;font:700 .95rem 'Microsoft JhengHei';box-shadow:0 2px 5px #4e2a1d55;text-decoration:none">← 回到大地圖</a>
+  <main>
+    <img class="title" src="assets/images/title-plaque.png" alt="古今對對碰">
+    <p class="intro">把右側的歷史事件卷軸，拖到正確的朝代卡格！手機可先點選卷軸，再點選朝代。</p>
+    <section class="board">
+      <div class="panel"><h2>朝代地圖</h2><div id="dynasties" class="dynasties"></div></div>
+      <div class="panel"><h2>事件卷軸</h2><div id="events" class="events"></div><p id="status" class="status" aria-live="polite">準備好就開始配對吧！</p><button class="restart" type="button" onclick="startGame()">重新開始</button></div>
+    </section>
+  </main>
+  <div id="success" class="success" role="dialog" aria-modal="true"><div class="success-card"><h2>🏮 全部過關！</h2><p>你已成功完成六個朝代的代表事件配對。</p><button class="restart" type="button" onclick="startGame()">再玩一次</button></div></div>
+  <script>
+    const data = [
+      { dynasty:'秦', image:'qin.png', events:['秦始皇統一六國，建立中央集權制度','修築萬里長城，防禦北方游牧民族','兵馬俑展現秦代陵墓文化與軍隊規模'] },
+      { dynasty:'漢', image:'han.png', events:['張騫出使西域，開啟絲綢之路交流','漢武帝推行獨尊儒術，重視儒家教育','蔡倫改良造紙術，讓書寫材料更普及'] },
+      { dynasty:'唐', image:'tang.png', events:['唐太宗推行貞觀之治，國力強盛','唐朝長安是當時重要的國際大都市','李白、杜甫等詩人留下大量經典詩作'] },
+      { dynasty:'宋', image:'song.png', events:['活字印刷術出現，促進知識傳播','宋代經濟繁榮，城市生活與商業發達','宋代山水畫與理學文化蓬勃發展'] },
+      { dynasty:'明', image:'ming.png', events:['鄭和率領寶船多次下西洋','明成祖遷都北京，營建紫禁城','明代修築長城，形成今日常見的磚石城牆'] },
+      { dynasty:'清', image:'qing.png', events:['康熙、雍正、乾隆時期國力強盛','清朝後期簽訂不平等條約，面臨外國壓力','辛亥革命後，清朝統治結束'] }
+    ];
+    let selected=null, completed=0;
+    const $=s=>document.querySelector(s);
+    const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+    function startGame(){
+      selected=null; completed=0; $('#success').classList.remove('show'); $('#status').className='status'; $('#status').textContent='準備好就開始配對吧！';
+      $('#dynasties').innerHTML=data.map(d=>`<article class="dynasty" data-dynasty="${d.dynasty}" tabindex="0" aria-label="${d.dynasty}朝代卡格"><img src="assets/images/${d.image}" alt="${d.dynasty}朝代主題插圖"><h3>${d.dynasty}朝</h3><div class="dropzone"><span class="hint">把事件放在這裡</span></div></article>`).join('');
+      const all=shuffle(data.flatMap(d=>d.events.map(text=>({text,dynasty:d.dynasty}))));
+      $('#events').innerHTML=all.map((e,i)=>`<div class="event" draggable="true" data-dynasty="${e.dynasty}" id="event-${i}" tabindex="0">${e.text}<span class="stamp">配對成功</span></div>`).join('');
+      bind();
+    }
+    function bind(){
+      document.querySelectorAll('.event:not(.locked)').forEach(el=>{
+        el.addEventListener('dragstart',e=>{selected=el; el.classList.add('dragging'); e.dataTransfer.setData('text/plain',el.id);});
+        el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+        el.addEventListener('click',()=>{ if(el.classList.contains('locked'))return; document.querySelectorAll('.event').forEach(x=>x.style.outline=''); selected=el; el.style.outline='3px solid #b23a2e'; $('#status').className='status'; $('#status').textContent='已選取卷軸，請點選正確的朝代卡格。'; });
+      });
+      document.querySelectorAll('.dynasty').forEach(zone=>{
+        zone.addEventListener('dragover',e=>{e.preventDefault(); zone.classList.add('over');});
+        zone.addEventListener('dragleave',()=>zone.classList.remove('over'));
+        zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('over');match(selected,zone);});
+        zone.addEventListener('click',()=>match(selected,zone));
+        zone.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();match(selected,zone);}});
+      });
+    }
+    function match(card,zone){
+      if(!card || card.classList.contains('locked')) return;
+      document.querySelectorAll('.event').forEach(x=>x.style.outline='');
+      if(card.dataset.dynasty===zone.dataset.dynasty){
+        card.classList.add('locked'); zone.querySelector('.dropzone').append(card); zone.querySelector('.hint')?.remove(); completed++;
+        $('#status').className='status ok'; $('#status').textContent='答對了！紅色印章已蓋上。'; selected=null;
+        if(![...zone.querySelectorAll('.event:not(.locked)')].length) zone.classList.add('done');
+        if(completed===18) setTimeout(()=>{localStorage.setItem('cert_dynasty','true');$('#success').classList.add('show')},450);
+      } else { $('#status').className='status'; $('#status').textContent='再想一想！這張卷軸先退回原處。'; card.animate([{transform:'translateX(0)'},{transform:'translateX(-9px)'},{transform:'translateX(9px)'},{transform:'translateX(0)'}],{duration:260}); selected=null; }
+    }
+    startGame();
+  </script>
+</body>
+</html>
