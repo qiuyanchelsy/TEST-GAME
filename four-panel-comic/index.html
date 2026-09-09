@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 四格漫畫產生機</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F0F2F5; /* A light, modern background */
+        }
+        .main-gradient-bg {
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+        }
+        .card {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        .btn-primary, .btn-secondary {
+            color: white;
+            font-weight: bold;
+            border-radius: 12px;
+            padding: 12px 24px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+        }
+        .btn-secondary {
+             background: linear-gradient(45deg, #f857a6 0%, #ff5858 100%);
+        }
+        .btn-primary:hover, .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .btn-primary:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .input-field, .select-field, .textarea-field {
+            border-radius: 10px;
+            border: 1px solid #D1D5DB;
+            padding: 10px 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        .input-field:focus, .select-field:focus, .textarea-field:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+        }
+        .style-label {
+            cursor: pointer;
+            border: 2px solid #E5E7EB;
+            padding: 16px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .style-label:hover {
+            border-color: #60A5FA;
+            background-color: #EFF6FF;
+        }
+        .style-input:checked + .style-label {
+            border-color: #3B82F6;
+            background-color: #DBEAFE;
+            color: #1E40AF;
+            font-weight: 500;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #6a11cb;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        .preview-image-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .result-image-panel {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="main-gradient-bg min-h-screen flex items-center justify-center p-4">
+
+    <main class="w-full max-w-4xl mx-auto">
+        <div id="error-banner" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+            <strong class="font-bold">發生錯誤！</strong>
+            <span class="block sm:inline" id="error-message"></span>
+            <span id="close-error-btn" class="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer">
+                <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>關閉</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+            </span>
+        </div>
+        <div id="app-container" class="card p-6 md:p-10 space-y-8">
+            <!-- Header -->
+            <div class="text-center">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800">🎨 AI 四格漫畫產生機 🎨</h1>
+                <p class="text-gray-500 mt-2">上傳你的照片，選擇風格，讓 AI 為你創造獨一無二的四格漫畫！</p>
+            </div>
+
+            <div role="status" class="bg-yellow-50 border border-yellow-300 rounded-lg p-4 text-gray-800">
+                <strong>網頁已開放，AI 繪圖尚未啟用</strong>
+                <p class="mt-2">不用登入即可填寫主題、選擇風格與編寫四格劇本。AI 繪圖需由老師完成服務設定後才能使用。</p>
+                <p class="mt-2 text-sm">請勿填寫真實姓名等個人資料；參考照片請先取得本人與老師同意。</p>
+            </div>
+            <details class="bg-blue-50 rounded-lg p-4"><summary class="cursor-pointer font-bold">看看示範：如果鉛筆長成一棵樹</summary><img src="comic-art.png" alt="AI 示範四格漫畫：橘貓拿出鉛筆，鉛筆變成大樹，小鳥飛來，大家在樹下閱讀。" width="1024" height="1024" class="w-full rounded-lg mt-3"><p class="text-sm mt-2">預先製作的 AI 示範作品，不是依照本次輸入產生的圖片。</p></details>
+            <!-- Form Steps -->
+            <div class="space-y-6">
+                <!-- Step 1: Theme -->
+                <div>
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">
+                        <span class="bg-blue-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2">1</span> 輸入主題
+                    </h2>
+                    <input type="text" id="comic-theme" placeholder="例：我的鉛筆突然長成一棵大樹" maxlength="50" class="input-field">
+                </div>
+
+                <!-- Step 2: Upload Image -->
+                <div>
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">
+                        <span class="bg-purple-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2">2</span> 上傳主角照片
+                    </h2>
+                    <div class="flex items-center gap-6 mb-4 bg-gray-50 p-3 rounded-lg">
+                        <p class="text-sm font-medium text-gray-700">要上傳幾位主角？</p>
+                        <div class="flex gap-4" id="char-count-selector">
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="char-count" value="1" class="h-4 w-4" checked> 1位</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="char-count" value="2" class="h-4 w-4"> 2位</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="char-count" value="3" class="h-4 w-4"> 3位</label>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">請根據您選擇的主角數量，上傳對應的清晰正面照片。</p>
+                    <input type="file" id="image-upload" accept="image/*" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"/>
+                    <div id="image-preview-container"></div>
+                </div>
+
+
+                <!-- Step 3: Style Selection -->
+                <div>
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">
+                        <span class="bg-pink-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2">3</span> 選擇漫畫風格
+                    </h2>
+                    <div id="style-selector" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <!-- Styles will be injected here by JS -->
+                    </div>
+                </div>
+                
+                <!-- Step 4: Content Generation -->
+                <div>
+                    <h2 class="text-xl font-bold text-gray-700 mb-2">
+                        <span class="bg-yellow-500 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-2">4</span> 決定漫畫內容
+                    </h2>
+                    <div class="flex gap-4">
+                        <label class="flex-1 text-center">
+                            <input type="radio" name="content-mode" value="auto" class="sr-only" checked>
+                            <div class="p-4 border-2 border-blue-500 bg-blue-100 rounded-lg cursor-pointer">AI 自動生成</div>
+                        </label>
+                        <label class="flex-1 text-center">
+                            <input type="radio" name="content-mode" value="manual" class="sr-only">
+                            <div class="p-4 border-2 border-gray-300 rounded-lg cursor-pointer">我來提供內容</div>
+                        </label>
+                    </div>
+                    <div id="manual-inputs" class="hidden mt-4 space-y-3">
+<button type="button" id="story-download-btn" class="btn-secondary">下載自己編寫的劇本</button>
+                        <textarea id="panel-1-text" class="textarea-field" placeholder="第一格內容 (50字內)" maxlength="50" rows="2"></textarea>
+                        <textarea id="panel-2-text" class="textarea-field" placeholder="第二格內容 (50字內)" maxlength="50" rows="2"></textarea>
+                        <textarea id="panel-3-text" class="textarea-field" placeholder="第三格內容 (50字內)" maxlength="50" rows="2"></textarea>
+                        <textarea id="panel-4-text" class="textarea-field" placeholder="第四格內容 (50字內)" maxlength="50" rows="2"></textarea>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Action Button -->
+            <div class="text-center pt-4">
+                <button id="generate-btn" disabled class="btn-primary text-lg w-full md:w-auto">AI 繪圖尚未啟用</button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-container" class="hidden card p-10 text-center space-y-4">
+            <div class="loader mx-auto"></div>
+            <h2 class="text-2xl font-bold text-gray-700">AI 正在揮灑創意...</h2>
+            <p class="text-gray-500">請稍候，美好的事物需要一點時間醞釀。這可能需要 1-2 分鐘。</p>
+        </div>
+
+        <!-- Result Display -->
+        <div id="result-container" class="hidden card p-6 md:p-10 space-y-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800">✨ 你的專屬漫畫完成了！ ✨</h2>
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <div id="result-images-grid" class="grid grid-cols-2 gap-4">
+                    <!-- 4 image panels will be inserted here -->
+                </div>
+            </div>
+            <div id="result-text" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                <!-- Panel texts will be injected here -->
+            </div>
+             <div class="text-center pt-4 flex flex-col sm:flex-row justify-center gap-4">
+                <button id="download-btn" class="btn-secondary text-lg w-full sm:w-auto hidden">📦 打包下載 (.zip)</button>
+                <button id="restart-btn" class="btn-primary text-lg w-full sm:w-auto">🎉 再玩一次！</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const errorBanner = document.getElementById('error-banner');
+            const errorMessage = document.getElementById('error-message');
+            const closeErrorBtn = document.getElementById('close-error-btn');
+            const appContainer = document.getElementById('app-container');
+            const loadingContainer = document.getElementById('loading-container');
+            const resultContainer = document.getElementById('result-container');
+            
+            const imageUpload = document.getElementById('image-upload');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const comicTheme = document.getElementById('comic-theme');
+            const styleSelector = document.getElementById('style-selector');
+            const contentModeRadios = document.querySelectorAll('input[name="content-mode"]');
+            const manualInputs = document.getElementById('manual-inputs');
+            const generateBtn = document.getElementById('generate-btn');
+            const charCountSelector = document.getElementById('char-count-selector');
+            
+            const resultImagesGrid = document.getElementById('result-images-grid');
+            const resultTextContainer = document.getElementById('result-text');
+            const downloadBtn = document.getElementById('download-btn');
+            const restartBtn = document.getElementById('restart-btn');
+
+            // --- State ---
+            let uploadedImages = []; // Stores objects with { mimeType, data }
+            let lastGeneratedData = null; // Stores { imageUrls, panelDescriptions }
+            const styles = [
+                { id: 'shonen', name: '日式少年漫畫風格' },
+                { id: 'shojo', name: '日式少女漫畫風格' },
+                { id: 'chibi', name: '超變形風格 (可愛)' },
+                { id: 'realistic', name: '寫實漫畫風格' },
+                { id: 'color', name: '彩色漫畫風格' },
+                { id: 'bw_manga', name: '黑白漫畫風格' },
+                { id: 'watercolor', name: '水彩畫風格' },
+                { id: 'sketch', name: '黑白素描風格' }
+            ];
+
+            // --- Functions ---
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorBanner.classList.remove('hidden');
+            }
+
+            function populateStyles() {
+                let html = '';
+                styles.forEach((style, index) => {
+                    html += `
+                        <div>
+                            <input type="radio" name="comic-style" value="${style.name}" id="style-${style.id}" class="sr-only style-input" ${index === 0 ? 'checked' : ''}>
+                            <label for="style-${style.id}" class="style-label block">${style.name}</label>
+                        </div>
+                    `;
+                });
+                styleSelector.innerHTML = html;
+            }
+
+            async function handleImageUpload(event) {
+                errorBanner.classList.add('hidden');
+                const charCount = parseInt(document.querySelector('input[name="char-count"]:checked').value, 10);
+                const files = event.target.files;
+
+                if (files.length > charCount) {
+                    showError(`您選擇了 ${charCount} 位主角，但上傳了 ${files.length} 張照片。請重新選擇檔案。`);
+                    imageUpload.value = ''; // Clear the selection
+                    return;
+                }
+                
+                imagePreviewContainer.innerHTML = '';
+                uploadedImages = [];
+
+                if (!files || files.length === 0) return;
+                
+                const filePromises = Array.from(files).map(file => {
+                     return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            const dataUrl = e.target.result;
+                            const mimeType = dataUrl.substring(dataUrl.indexOf(":") + 1, dataUrl.indexOf(";"));
+                            const base64Data = dataUrl.split(',')[1];
+                            
+                            uploadedImages.push({ mimeType: mimeType, data: base64Data });
+
+                            const wrapper = document.createElement('div');
+                            wrapper.className = 'preview-image-wrapper';
+                            const img = document.createElement('img');
+                            img.src = dataUrl;
+                            img.className = 'preview-image';
+                            wrapper.appendChild(img);
+                            imagePreviewContainer.appendChild(wrapper);
+                            
+                            resolve();
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                });
+                await Promise.all(filePromises);
+            }
+
+            function handleContentModeChange() {
+                const selectedMode = document.querySelector('input[name="content-mode"]:checked').value;
+                contentModeRadios.forEach(radio => {
+                    const labelDiv = radio.nextElementSibling;
+                    if(radio.value === selectedMode){
+                        labelDiv.classList.remove('border-gray-300');
+                        labelDiv.classList.add('border-blue-500', 'bg-blue-100');
+                    } else {
+                        labelDiv.classList.remove('border-blue-500', 'bg-blue-100');
+                        labelDiv.classList.add('border-gray-300');
+                    }
+                });
+
+                if (selectedMode === 'manual') {
+                    manualInputs.classList.remove('hidden');
+                } else {
+                    manualInputs.classList.add('hidden');
+                }
+            }
+            
+            async function callApi(apiUrl, payload) {
+                let retries = 3;
+                let delay = 1000;
+                while (retries > 0) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+                        return await response.json();
+                    } catch (error) {
+                        console.error(`API call failed. Retrying in ${delay / 1000}s...`, error);
+                        retries--;
+                        if (retries === 0) throw error;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                    }
+                }
+            }
+            
+            async function generatePanelDescriptions(theme, style) {
+                const systemPrompt = `你是一個四格漫畫編劇。根據使用者提供的主題和風格，創作出一個有趣、簡短、分成四格的漫畫劇本。每格的描述必須在50個中文字以內，且要清楚描述場景和人物動作。`;
+                const charCount = uploadedImages.length;
+                const charInfo = charCount > 1 ? `這個故事有 ${charCount} 位主角，請在描述中用「主角1」、「主角2」等來區分他們。` : '';
+                const userQuery = `主題：「${theme}」，風格：「${style}」。${charInfo}請產生四格漫畫的劇本。`;
+                
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                
+                const payload = {
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                panels: {
+                                    type: "ARRAY",
+                                    items: {
+                                        type: "OBJECT",
+                                        properties: {
+                                            panel_number: { type: "NUMBER" },
+                                            description: { type: "STRING" }
+                                        },
+                                        required: ["panel_number", "description"]
+                                    }
+                                }
+                            },
+                           required: ["panels"]
+                        }
+                    }
+                };
+
+                const result = await callApi(apiUrl, payload);
+                const jsonText = result.candidates[0].content.parts[0].text;
+                const parsed = JSON.parse(jsonText);
+                
+                if (parsed.panels && parsed.panels.length === 4) {
+                    return parsed.panels.map(p => p.description);
+                } else {
+                    throw new Error("無法生成有效的四格漫畫劇本。");
+                }
+            }
+
+            async function generateImagePanel(theme, style, panelDescription, index) {
+                const userPrompt = `
+                Draw a single square panel for a 4-panel comic strip. This is panel number ${index + 1}.
+                Style: "${style}".
+                Scene description: "${panelDescription}".
+
+                Please use the ${uploadedImages.length} uploaded photo(s) as a reference for the character(s).
+                **Critical instructions**:
+                1. The appearance AND clothing of the characters in your drawing MUST exactly match the people in the reference photos.
+                2. Do NOT change the characters' clothing between panels.
+                3. The final image must be a PURE picture. Do NOT add any text, speech bubbles, numbers, or panel borders.
+                `;
+                
+                const payload = {
+                    contents: [{
+                        parts: [
+                            { text: userPrompt },
+                            ...uploadedImages.map(img => ({
+                                inlineData: { mimeType: img.mimeType, data: img.data }
+                            }))
+                        ]
+                    }],
+                    generationConfig: {
+                        responseModalities: ['IMAGE']
+                    },
+                };
+
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+
+                const result = await callApi(apiUrl, payload);
+                
+                if (!result || !result.candidates || result.candidates.length === 0) {
+                    console.error("API response is missing 'candidates' array or it is empty:", JSON.stringify(result, null, 2));
+                    throw new Error(`第 ${index + 1} 格圖片生成失敗：API 回應無效或為空。`);
+                }
+                const candidate = result.candidates[0];
+
+                if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+                    console.error("Image generation stopped for reason:", candidate.finishReason, JSON.stringify(result, null, 2));
+                    throw new Error(`第 ${index + 1} 格圖片生成失敗：原因為 ${candidate.finishReason}。可能是因為內容違反了安全政策。`);
+                }
+
+                const base64Data = candidate?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                if (!base64Data) {
+                    console.error("Could not find image data in response:", JSON.stringify(result, null, 2));
+                    throw new Error(`第 ${index + 1} 格圖片生成失敗，未收到圖片資料。`);
+                }
+                return `data:image/png;base64,${base64Data}`;
+            }
+
+            async function generateComic() {
+                showError('AI 繪圖尚未啟用，請先請老師完成後端服務設定。');
+                return;
+                errorBanner.classList.add('hidden');
+                const charCount = parseInt(document.querySelector('input[name="char-count"]:checked').value, 10);
+
+                if (uploadedImages.length !== charCount) {
+                     showError(`您選擇了 ${charCount} 位主角，但只上傳了 ${uploadedImages.length} 張照片。請補齊照片。`);
+                    return;
+                }
+                const theme = comicTheme.value.trim();
+                if (!theme) {
+                    showError("請輸入漫畫主題！");
+                    return;
+                }
+                
+                appContainer.classList.add('hidden');
+                resultContainer.classList.add('hidden');
+                loadingContainer.classList.remove('hidden');
+                generateBtn.disabled = true;
+                downloadBtn.classList.add('hidden');
+
+
+                try {
+                    const style = document.querySelector('input[name="comic-style"]:checked').value;
+                    const mode = document.querySelector('input[name="content-mode"]:checked').value;
+                    let panelDescriptions = [];
+                    
+                    if (mode === 'auto') {
+                        panelDescriptions = await generatePanelDescriptions(theme, style);
+                    } else {
+                        panelDescriptions = [
+                            document.getElementById('panel-1-text').value,
+                            document.getElementById('panel-2-text').value,
+                            document.getElementById('panel-3-text').value,
+                            document.getElementById('panel-4-text').value
+                        ];
+                        if (panelDescriptions.some(d => d.trim() === '')) {
+                            throw new Error("請填寫所有四格的內容！");
+                        }
+                    }
+
+                    const imageGenerationPromises = panelDescriptions.map((desc, i) => 
+                        generateImagePanel(theme, style, desc, i)
+                    );
+                    const imageUrls = await Promise.all(imageGenerationPromises);
+
+                    // Store data for download
+                    lastGeneratedData = { imageUrls, panelDescriptions };
+
+                    // Display images
+                    resultImagesGrid.innerHTML = imageUrls.map(url => 
+                        `<img src="${url}" class="result-image-panel shadow-lg" />`
+                    ).join('');
+
+                    // Display text
+                    resultTextContainer.replaceChildren();
+                    panelDescriptions.forEach((desc, i) => {
+                        const block = document.createElement('div');
+                        block.className = 'bg-gray-100 p-3 rounded-md';
+                        block.textContent = '第 ' + (i + 1) + ' 格：' + desc;
+                        resultTextContainer.appendChild(block);
+                    });
+                    
+                    loadingContainer.classList.add('hidden');
+                    resultContainer.classList.remove('hidden');
+                    downloadBtn.classList.remove('hidden');
+
+
+                } catch (error) {
+                    console.error('Error generating comic:', error);
+                    showError(`發生錯誤：${error.message}`);
+                    loadingContainer.classList.add('hidden');
+                    appContainer.classList.remove('hidden');
+                } finally {
+                    generateBtn.disabled = false;
+                }
+            }
+
+            function triggerDownload(blob, filename) {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(link.href), 10000);
+            }
+
+            async function packageAndDownload() {
+                if (!lastGeneratedData) {
+                    showError('沒有可下載的漫畫資料。');
+                    return;
+                }
+
+                const { imageUrls, panelDescriptions } = lastGeneratedData;
+                const zip = new JSZip();
+
+                // Create story.txt
+                const textContent = panelDescriptions.map((desc, i) => `第 ${i + 1} 格:\r\n${desc}\r\n\r\n`).join('');
+                zip.file("story.txt", textContent);
+
+                // Add images
+                const imgFolder = zip.folder("comic_panels");
+                imageUrls.forEach((url, i) => {
+                    const base64Data = url.split(',')[1];
+                    imgFolder.file(`panel_${i + 1}.png`, base64Data, { base64: true });
+                });
+                
+                // Generate and trigger download
+                try {
+                    const content = await zip.generateAsync({ type: "blob" });
+                    triggerDownload(content, "ai_comic.zip");
+                } catch (error) {
+                    console.error("Error zipping files:", error);
+                    showError("打包檔案時發生錯誤。");
+                }
+            }
+            
+            function restart() {
+                comicTheme.value = '';
+                imageUpload.value = '';
+                imagePreviewContainer.innerHTML = '';
+                uploadedImages = [];
+                lastGeneratedData = null;
+                document.getElementById('panel-1-text').value = '';
+                document.getElementById('panel-2-text').value = '';
+                document.getElementById('panel-3-text').value = '';
+                document.getElementById('panel-4-text').value = '';
+                document.querySelector('input[value="auto"]').checked = true;
+                handleContentModeChange();
+
+                resultContainer.classList.add('hidden');
+                loadingContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                downloadBtn.classList.add('hidden');
+            }
+
+
+            // --- Event Listeners ---
+            imageUpload.addEventListener('change', handleImageUpload);
+            charCountSelector.addEventListener('change', () => { 
+                // Clear previews if user changes character count after uploading
+                imageUpload.value = '';
+                imagePreviewContainer.innerHTML = '';
+                uploadedImages = [];
+            });
+            contentModeRadios.forEach(radio => radio.addEventListener('change', handleContentModeChange));
+            generateBtn.addEventListener('click', generateComic);
+            downloadBtn.addEventListener('click', packageAndDownload);
+            restartBtn.addEventListener('click', restart);
+            closeErrorBtn.addEventListener('click', () => {
+                errorBanner.classList.add('hidden');
+            });
+            
+            document.getElementById('story-download-btn').addEventListener('click', () => {
+                const panels = [1,2,3,4].map(i => document.getElementById('panel-' + i + '-text').value.trim());
+                if (panels.some(p => !p)) { showError('請先填妥四格內容，再下載劇本。'); return; }
+                const story = '主題：' + comicTheme.value.trim() + '\r\n\r\n' + panels.map((p,i) => '第 ' + (i+1) + ' 格：' + p).join('\r\n\r\n');
+                triggerDownload(new Blob([story], {type:'text/plain;charset=utf-8'}), '我的四格劇本.txt');
+            });
+            // --- Initial Setup ---
+            populateStyles();
+        });
+    </script>
+
+</body>
+</html>
