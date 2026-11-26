@@ -677,6 +677,16 @@
             <span id="compare-slot-2" class="px-2.5 py-0.5 rounded-lg bg-white border border-amber-200 text-stone-500 font-bold">未選擇卡片 2</span>
           </div>
           <div class="flex items-center gap-2">
+            <button id="btn-open-compare" onclick="openCompareModal()" disabled class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-stone-300 disabled:text-stone-500 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-black shadow-xs transition active:scale-95">
+              開始左右並排比較
+            </button>
+            <button onclick="clearCompareSelection()" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-600 text-xs font-bold transition active:scale-95">
+              清除
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Cards Grid (6 cards per page on widescreen so every card is large, clear, and zero-scroll) -->
       <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
         <!-- Populated by JS -->
