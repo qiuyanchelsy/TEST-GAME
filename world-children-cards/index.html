@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>世界孩子身份卡｜30張隨機抽卡互動工具</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans TC & Zen Maru Gothic for warm storybook feel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-paper: #FDFBF7;
+      --ink-dark: #2C2A29;
+      --ink-muted: #5F5B57;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-paper);
+      color: var(--ink-dark);
+      /* Warm paper grain + soft watercolor washes */
+      background-image:
+        radial-gradient(circle at 12% 15%, rgba(186, 230, 253, 0.35) 0%, transparent 42%),
+        radial-gradient(circle at 88% 18%, rgba(254, 215, 170, 0.35) 0%, transparent 45%),
+        radial-gradient(circle at 80% 85%, rgba(187, 247, 208, 0.32) 0%, transparent 45%),
+        radial-gradient(circle at 18% 82%, rgba(254, 202, 202, 0.30) 0%, transparent 42%),
+        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===================================================================== */
+    /* 16:9 WIDESCREEN & IPAD LANDSCAPE ZERO-SCROLL VIEWPORT LOCK (lg / >=900px) */
+    /* ===================================================================== */
+    @media (min-width: 900px) {
+      html, body {
+        height: 100dvh;
+        max-height: 100dvh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        flex-shrink: 0;
+      }
+
+      main {
+        flex: 1 1 0%;
+        min-height: 0;
+        width: 100%;
+        max-width: 1520px;
+        margin: 0 auto;
+        padding: 0.65rem 1.25rem !important;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* Draw Mode: lock full height so card + controls + actions fit without scrolling */
+      #view-draw:not(.hidden) {
+        flex: 1 1 0%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        margin-top: 0 !important;
+      }
+
+      #draw-control-bar {
+        flex-shrink: 0;
+        padding: 0.5rem 1rem !important;
+      }
+
+      #draw-main-grid {
+        flex: 1 1 0%;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 0.85rem;
+        align-items: stretch;
+      }
+
+      #draw-stage-col {
+        grid-column: span 8 / span 8;
+        height: 100%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      body.projector-zoom #draw-stage-col {
+        grid-column: span 12 / span 12 !important;
+      }
+
+      #draw-stage-col .flip-scene {
+        flex: 1 1 0%;
+        min-height: 0;
+        width: 100%;
+        max-width: 100% !important;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #flip-card {
+        flex: 1 1 0%;
+        min-height: 0;
+        height: 100%;
+      }
+
+      .card-face {
+        height: 100% !important;
+        min-height: 0 !important;
+      }
+
+      .card-back {
+        padding: 1.25rem !important;
+      }
+
+      .card-front {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card-front > div {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      /* Arrange the 7 life items in a compact 2-column grid on landscape screens */
+      .card-items-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.45rem !important;
+      }
+
+      .card-wish-span {
+        grid-column: span 2 / span 2 !important;
+      }
+
+      #drawn-actions:not(.hidden) {
+        flex-shrink: 0;
+        margin-top: 0.5rem !important;
+        max-width: 100% !important;
+      }
+
+      #draw-sidebar {
+        grid-column: span 4 / span 4;
+        height: 100%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+      }
+
+      #sidebar-legend-card {
+        flex-shrink: 0;
+        padding: 0.75rem 1rem !important;
+      }
+
+      #sidebar-history-card {
+        flex: 1 1 0%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 0.75rem 1rem !important;
+      }
+
+      #history-list {
+        flex: 1 1 0%;
+        min-height: 0;
+        max-height: none !important;
+        overflow-y: auto;
+      }
+
+      /* Gallery Mode: lock header/filter bar and scroll only the card grid internally */
+      #view-gallery:not(.hidden) {
+        flex: 1 1 0%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+      }
+
+      #gallery-controls {
+        flex-shrink: 0;
+        padding: 0.65rem 1rem !important;
+      }
+
+      #gallery-grid {
+        flex: 1 1 0%;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        overflow: hidden;
+      }
+
+      #gallery-pagination {
+        flex-shrink: 0;
+      }
+
+      /* Stand-up Activity Mode: fit entire prompt + stats + controls inside 1 screen */
+      #view-activity:not(.hidden) {
+        flex: 1 1 0%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #activity-card-box {
+        flex: 1 1 0%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 1rem 1.75rem !important;
+        overflow-y: auto;
+      }
+
+      #activity-question-box {
+        padding: 0.9rem 1.5rem !important;
+        margin: 0.35rem 0 !important;
+      }
+    }
+
+    .font-storybook {
+      font-family: 'Zen Maru Gothic', 'Noto Sans TC', sans-serif;
+    }
+
+    /* 3D Card Flip Container (iPad Safari friendly) */
+    .flip-scene {
+      perspective: 1400px;
+      -webkit-perspective: 1400px;
+    }
+
+    .flip-card {
+      position: relative;
+      width: 100%;
+      transition: transform 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+      -webkit-transition: -webkit-transform 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+    }
+
+    .flip-card.is-flipped {
+      transform: rotateY(180deg);
+      -webkit-transform: rotateY(180deg);
+    }
+
+    .flip-card.is-shuffling {
+      animation: shuffleWobble 0.55s ease-in-out;
+    }
+
+    @keyframes shuffleWobble {
+      0% { transform: scale(1) rotate(0deg); }
+      20% { transform: scale(0.95) rotate(-3deg) translateX(-10px); }
+      45% { transform: scale(1.02) rotate(3deg) translateX(10px); }
+      70% { transform: scale(0.97) rotate(-2deg) translateX(-6px); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .card-face {
+      width: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 1.5rem;
+    }
+
+    .card-back {
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-front {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: rotateY(180deg);
+      -webkit-transform: rotateY(180deg);
+      z-index: 1;
+    }
+
+    /* When flipped, make front flow naturally in document height so no clipping occurs on mobile */
+    .flip-card.is-flipped .card-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .flip-card.is-flipped .card-front {
+      position: relative;
+      pointer-events: auto;
+    }
+
+    /* Hand-drawn subtle card border & watercolor accent */
+    .storybook-card {
+      background: #FFFFFF;
+      border: 2px solid rgba(44, 42, 41, 0.09);
+      box-shadow:
+        0 10px 28px -6px rgba(84, 70, 52, 0.12),
+        0 4px 10px -3px rgba(84, 70, 52, 0.06);
+    }
+
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(245, 240, 230, 0.6);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(180, 168, 152, 0.5);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(150, 138, 122, 0.75);
+    }
+
+    /* Gentle float animation for globe on card back */
+    @keyframes gentleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-float {
+      animation: gentleFloat 3.6s ease-in-out infinite;
+    }
+
+    /* ===================================================================== */
+    /* CLASSROOM FULLSCREEN & PROJECTOR ZOOM MODE STYLES                     */
+    /* ===================================================================== */
+    body.is-theater-fullscreen {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      overflow: hidden;
+      z-index: 9999;
+      background-color: var(--bg-paper);
+    }
+
+    /* Projector Zoom Mode: enlarges typography & widens stages for back-row readability */
+    body.projector-zoom main {
+      max-width: 1560px !important;
+    }
+
+    body.projector-zoom .card-zoom-title {
+      font-size: 1.55rem !important;
+      line-height: 1.2 !important;
+    }
+
+    body.projector-zoom .card-zoom-sub {
+      font-size: 0.95rem !important;
+    }
+
+    body.projector-zoom .card-zoom-cost {
+      font-size: 1.3rem !important;
+      padding-top: 0.55rem !important;
+      padding-bottom: 0.55rem !important;
+    }
+
+    body.projector-zoom .card-zoom-list {
+      font-size: 1.02rem !important;
+      line-height: 1.48 !important;
+    }
+
+    body.projector-zoom .card-zoom-item {
+      padding: 0.5rem 0.75rem !important;
+    }
+
+    body.projector-zoom #q-title {
+      font-size: 2.2rem !important;
+      line-height: 1.3 !important;
+    }
+
+    body.projector-zoom #q-hint {
+      font-size: 1.1rem !important;
+    }
+
+    body.projector-zoom #q-discussion {
+      font-size: 1.1rem !important;
+      line-height: 1.55 !important;
+    }
+
+    body.projector-zoom #compare-modal-container {
+      max-width: 96vw !important;
+    }
+
+    /* Hide secondary sidebar in Draw mode when Projector Zoom is active so the card takes center stage */
+    body.projector-zoom #draw-sidebar {
+      display: none !important;
+    }
+    body.projector-zoom #draw-stage-col {
+      grid-column: span 12 / span 12 !important;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-amber-200 selection:text-stone-900">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-stone-200/80 shadow-sm">
+    <div class="max-w-[1520px] mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+      <!-- Brand Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-300 via-orange-300 to-rose-300 flex items-center justify-center shadow-sm border border-white text-xl select-none">
+          🌍
+        </div>
+        <div>
+          <h1 class="font-storybook text-base sm:text-lg font-black tracking-tight text-stone-800 leading-tight">
+            世界孩子身份卡
+          </h1>
+          <p class="text-[11px] text-stone-500 font-medium hidden sm:block">
+            如果世界只有 100 人｜30 張課堂互動抽卡工具（16:9 寬螢幕單頁版）
+          </p>
+        </div>
+      </div>
+
+      <!-- Mode Switcher Tabs + Sound + Projector Zoom + Fullscreen -->
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <nav class="inline-flex bg-stone-200/75 p-1 rounded-xl" role="tablist">
+          <button id="tab-draw" onclick="switchMode('draw')" class="mode-tab px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-stone-900 shadow-sm flex items-center gap-1.5">
+            <span>🎴</span><span>隨機抽卡</span>
+          </button>
+          <button id="tab-gallery" onclick="switchMode('gallery')" class="mode-tab px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all text-stone-600 hover:text-stone-900 flex items-center gap-1.5">
+            <span>📚</span><span>全覽與比較</span>
+          </button>
+          <button id="tab-activity" onclick="switchMode('activity')" class="mode-tab px-3 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all text-stone-600 hover:text-stone-900 flex items-center gap-1.5">
+            <span>🙋</span><span>站位體驗引導</span>
+          </button>
+        </nav>
+
+        <!-- Projector Zoom Mode Toggle -->
+        <button id="btn-projector-zoom" onclick="toggleProjectorZoom()" title="放大字體並隱藏側欄，適合教室後排觀看" class="px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 hover:bg-amber-50 active:scale-95 transition shadow-sm flex items-center gap-1 text-xs sm:text-sm font-bold">
+          <span id="zoom-icon" class="text-sm">🔍</span>
+          <span id="zoom-label">大螢幕放大</span>
+        </button>
+
+        <!-- Fullscreen Toggle Button -->
+        <button id="btn-fullscreen" onclick="toggleFullscreen()" title="切換全螢幕投影（快捷鍵 F）" class="px-3 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white border border-stone-800 active:scale-95 transition shadow-sm flex items-center gap-1 text-xs sm:text-sm font-bold">
+          <span id="fullscreen-icon" class="text-sm">🖥️</span>
+          <span id="fullscreen-label">全螢幕投影</span>
+        </button>
+
+        <!-- Sound Toggle Button -->
+        <button id="btn-sound" onclick="toggleSound()" title="切換音效" class="px-2.5 py-1.5 rounded-xl bg-white border border-stone-200 text-stone-700 hover:bg-amber-50 active:scale-95 transition shadow-sm flex items-center gap-1 text-xs font-bold">
+          <span id="sound-icon" class="text-sm">🔊</span>
+          <span class="hidden lg:inline" id="sound-label">音效開</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-6xl mx-auto px-4 py-4 sm:py-6 transition-all">
+
+    <!-- ========================================================= -->
+    <!-- MODE 1: 隨機抽卡模式 (Random Draw Mode)                     -->
+    <!-- ========================================================= -->
+    <section id="view-draw" class="space-y-4">
+      <!-- Control Bar -->
+      <div id="draw-control-bar" class="storybook-card rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2.5">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+          <!-- No-repeat Toggle -->
+          <label class="inline-flex items-center gap-2 cursor-pointer select-none bg-amber-50/80 border border-amber-200/80 px-3 py-1.5 rounded-xl">
+            <input type="checkbox" id="toggle-norepeat" checked onchange="handleModeToggleChange()" class="w-4 h-4 accent-amber-600 rounded cursor-pointer" />
+            <span class="text-xs sm:text-sm font-bold text-stone-800">不重複抽卡</span>
+            <span class="text-xs text-stone-500 hidden xl:inline">（全班30人一人一張）</span>
+          </label>
+
+          <!-- Remaining Deck Counter -->
+          <div id="deck-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 border border-stone-200 text-xs sm:text-sm font-bold text-stone-700">
+            <span>🗂️ 剩餘牌堆：</span>
+            <span id="remaining-count" class="text-amber-700 text-sm sm:text-base font-black">30</span>
+            <span class="text-stone-400">/ 30 張</span>
+          </div>
+
+          <!-- Keyboard Shortcut Hint -->
+          <div class="hidden xl:inline-flex items-center gap-1.5 text-xs text-stone-500 bg-stone-50 px-2.5 py-1 rounded-xl border border-stone-200/70">
+            <span>⌨️ 快捷鍵：</span>
+            <kbd class="px-1.5 py-0.5 bg-white border border-stone-300 rounded text-[11px] font-bold text-stone-700">空白鍵</kbd>
+            <span>抽卡｜</span>
+            <kbd class="px-1.5 py-0.5 bg-white border border-stone-300 rounded text-[11px] font-bold text-stone-700">F</kbd>
+            <span>全螢幕</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <!-- Hide/Show Details Toggle (for guessing game) -->
+          <button id="btn-mystery" onclick="toggleMysteryMode()" class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition active:scale-95 flex items-center gap-1.5 bg-white border-stone-200 text-stone-700 hover:bg-stone-50">
+            <span id="mystery-icon">👁️</span>
+            <span id="mystery-text">隱藏生活細節（猜猜看）</span>
+          </button>
+
+          <!-- Reset Deck Button -->
+          <button onclick="resetDeck()" class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 transition active:scale-95 flex items-center gap-1.5">
+            <span>🔄</span>
+            <span>重置牌堆</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Stage: 3D Flip Card + Action Button -->
+      <div id="draw-main-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <!-- Left/Center: Card Stage -->
+        <div id="draw-stage-col" class="lg:col-span-8 flex flex-col items-center">
+          <div class="flip-scene w-full max-w-2xl transition-all">
+            <div id="flip-card" class="flip-card">
+
+              <!-- CARD BACK (Before Draw) -->
+              <div class="card-face card-back storybook-card p-6 sm:p-8 min-h-[380px] flex flex-col items-center justify-center text-center relative overflow-hidden border-4 border-amber-200/80 bg-gradient-to-br from-[#FFFDF9] via-[#FEF7EC] to-[#F6EFE2]">
+                <!-- Decorative Watercolor Corners -->
+                <div class="absolute -top-12 -left-12 w-40 h-40 rounded-full bg-sky-200/40 blur-xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -right-12 w-44 h-44 rounded-full bg-amber-200/50 blur-xl pointer-events-none"></div>
+                <div class="absolute top-5 right-6 text-2xl opacity-40 select-none">✨</div>
+                <div class="absolute bottom-5 left-6 text-2xl opacity-40 select-none">🌱</div>
+
+                <!-- Illustrated Globe Emblem -->
+                <div class="animate-float w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-b from-sky-100 to-emerald-100 border-4 border-white shadow-lg flex items-center justify-center mb-4 relative">
+                  <svg class="w-16 h-16 sm:w-20 sm:h-20" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="60" r="46" fill="#7DD3FC" stroke="#0284C7" stroke-width="3"/>
+                    <path d="M36 36C44 30 56 32 60 40C64 48 54 56 48 62C42 68 32 64 28 54C25 46 30 40 36 36Z" fill="#86EFAC" stroke="#15803D" stroke-width="2.2"/>
+                    <path d="M72 34C82 32 92 40 90 50C88 60 76 62 70 56C64 50 64 36 72 34Z" fill="#86EFAC" stroke="#15803D" stroke-width="2.2"/>
+                    <path d="M56 70C66 68 78 74 76 84C74 92 60 94 52 88C46 83 48 72 56 70Z" fill="#FDE047" stroke="#A16207" stroke-width="2"/>
+                    <circle cx="48" cy="56" r="2.5" fill="#1E293B"/>
+                    <circle cx="72" cy="56" r="2.5" fill="#1E293B"/>
+                    <path d="M54 63C57 67 63 67 66 63" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+
+                <span class="inline-block px-3 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold tracking-wider mb-1.5 border border-amber-200">
+                  GLOBAL VILLAGE • 30 KIDS
+                </span>
+                <h2 class="font-storybook text-2xl sm:text-3xl font-black text-stone-800 mb-1.5">
+                  你會出生在哪一個家庭？
+                </h2>
+                <p class="text-xs sm:text-sm text-stone-600 max-w-md leading-relaxed mb-5">
+                  這副牌組依照真實世界人口比例設計：包含 <strong class="text-blue-700">A區 5張</strong>、<strong class="text-emerald-700">B區 7張</strong>、<strong class="text-amber-700">C區 12張</strong> 與 <strong class="text-rose-700">D區 6張</strong>。
+                </p>
+
+                <button onclick="drawRandomCard()" class="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white font-storybook text-lg font-black shadow-lg shadow-orange-500/25 active:scale-95 transition-all flex items-center gap-2.5 cursor-pointer">
+                  <span>🎲</span>
+                  <span>抽取我的世界身份卡</span>
+                </button>
+              </div>
+
+              <!-- CARD FRONT (Revealed Kid Identity) -->
+              <div id="drawn-card-front" class="card-face card-front storybook-card overflow-hidden">
+                <!-- Dynamically rendered card HTML -->
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Action Buttons Below Card -->
+          <div id="drawn-actions" class="hidden mt-3 flex flex-wrap items-center justify-center gap-2.5 w-full max-w-2xl">
+            <button onclick="drawRandomCard()" class="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-storybook text-base font-black shadow-md active:scale-95 transition flex items-center justify-center gap-2">
+              <span>🎲</span>
+              <span>再抽下一張</span>
+            </button>
+            <button onclick="addCurrentToHistory()" id="btn-save-history" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-md active:scale-95 transition flex items-center gap-1.5">
+              <span>📌</span>
+              <span>加入已抽紀錄</span>
+            </button>
+            <button onclick="flipToBack()" class="px-4 py-2.5 rounded-xl bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 font-bold text-xs sm:text-sm active:scale-95 transition">
+              蓋回牌背
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Sidebar: Drawn History & Zone Distribution -->
+        <aside id="draw-sidebar" class="lg:col-span-4 space-y-4">
+          <!-- Proportion Legend Card -->
+          <div id="sidebar-legend-card" class="storybook-card rounded-2xl p-4">
+            <h3 class="font-storybook text-sm sm:text-base font-black text-stone-800 mb-2 flex items-center gap-2">
+              <span>📊</span>
+              <span>世界 30 人比例分布圖</span>
+            </h3>
+            <div class="grid grid-cols-2 lg:grid-cols-1 gap-1.5 text-xs">
+              <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-blue-50/80 border border-blue-100">
+                <span class="font-bold text-blue-900">🔵 A區｜資源充裕</span>
+                <span class="font-black text-blue-700">5 張（17%）</span>
+              </div>
+              <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-emerald-50/80 border border-emerald-100">
+                <span class="font-bold text-emerald-900">🟢 B區｜穩定小康</span>
+                <span class="font-black text-emerald-700">7 張（23%）</span>
+              </div>
+              <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-amber-50/80 border border-amber-100">
+                <span class="font-bold text-amber-900">🟠 C區｜辛苦打拚</span>
+                <span class="font-black text-amber-700">12 張（40%）</span>
+              </div>
+              <div class="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-rose-50/80 border border-rose-100">
+                <span class="font-bold text-rose-900">🔴 D區｜脆弱處境</span>
+                <span class="font-black text-rose-700">6 張（20%）</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Drawn History Panel -->
+          <div id="sidebar-history-card" class="storybook-card rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2 shrink-0">
+              <h3 class="font-storybook text-sm sm:text-base font-black text-stone-800 flex items-center gap-2">
+                <span>📋</span>
+                <span>課堂已抽紀錄（<span id="history-count">0</span>）</span>
+              </h3>
+              <button onclick="clearHistory()" class="text-xs font-bold text-stone-400 hover:text-rose-600 transition">
+                清空紀錄
+              </button>
+            </div>
+            <div id="history-list" class="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
+              <p class="text-xs text-stone-400 text-center py-5 bg-stone-50 rounded-xl border border-dashed border-stone-200">
+                尚未加入紀錄，抽卡後可自動或手動記錄學生抽到的身份！
+              </p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- MODE 2: 全覽與比較圖鑑 (30 Cards Gallery & Side-by-Side)    -->
+    <!-- ========================================================= -->
+    <section id="view-gallery" class="hidden space-y-4">
+      <!-- Filter & Sort Controls -->
+      <div id="gallery-controls" class="storybook-card rounded-2xl p-3 sm:p-4 space-y-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-2.5">
+          <!-- Zone Filters -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="setGalleryFilter('ALL')" data-filter="ALL" class="filter-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-stone-800 text-white shadow-sm transition">
+              全部（30張）
+            </button>
+            <button onclick="setGalleryFilter('A')" data-filter="A" class="filter-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200 transition">
+              A區 資源充裕（5）
+            </button>
+            <button onclick="setGalleryFilter('B')" data-filter="B" class="filter-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition">
+              B區 穩定小康（7）
+            </button>
+            <button onclick="setGalleryFilter('C')" data-filter="C" class="filter-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition">
+              C區 辛苦打拚（12）
+            </button>
+            <button onclick="setGalleryFilter('D')" data-filter="D" class="filter-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-200 transition">
+              D區 脆弱處境（6）
+            </button>
+          </div>
+
+          <!-- Sort Dropdown -->
+          <div class="flex items-center gap-2">
+            <label for="sort-select" class="text-xs font-bold text-stone-500">排序：</label>
+            <select id="sort-select" onchange="renderGallery()" class="px-2.5 py-1.5 rounded-xl bg-stone-100 border border-stone-200 text-xs sm:text-sm font-bold text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-400">
+              <option value="id-asc">編號 01 → 30</option>
+              <option value="cost-desc">每日生活費：高 → 低</option>
+              <option value="cost-asc">每日生活費：低 → 高</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Side-by-side Comparison Tray -->
+        <div class="bg-amber-50/90 border border-amber-200 rounded-xl px-3 py-2 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2 flex-wrap text-xs sm:text-sm">
+            <span class="font-black text-amber-900">⚖️ 超級比一比：</span>
+            <span id="compare-slot-1" class="px-2.5 py-0.5 rounded-lg bg-white border border-amber-200 text-stone-500 font-bold">未選擇卡片 1</span>
+            <span class="font-bold text-amber-700">VS</span>
+            <span id="compare-slot-2" class="px-2.5 py-0.5 rounded-lg bg-white border border-amber-200 text-stone-500 font-bold">未選擇卡片 2</span>
+          </div>
+          <div class="flex items-center gap-2">
+      <!-- Cards Grid (6 cards per page on widescreen so every card is large, clear, and zero-scroll) -->
+      <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Gallery Pagination Bar -->
+      <div id="gallery-pagination" class="storybook-card rounded-2xl px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+        <div id="gallery-page-info" class="text-xs sm:text-sm font-bold text-stone-600">
+          顯示第 1–6 張，共 30 張
+        </div>
+        <div class="flex items-center gap-1.5" id="gallery-page-buttons">
+          <!-- Page buttons populated by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- MODE 3: 課堂站位體驗引導台 (Classroom Stand-up Activity)    -->
+    <!-- ========================================================= -->
+    <section id="view-activity" class="hidden space-y-4">
+      <div id="activity-card-box" class="storybook-card rounded-3xl p-5 sm:p-7 bg-gradient-to-br from-white via-[#FFFDF8] to-amber-50/60">
+        <div class="flex flex-wrap items-center justify-between gap-2 shrink-0">
+          <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs sm:text-sm font-black">
+            🙋 課堂互動引導台｜請每位同學拿起手上的身份卡回答
+          </span>
+          <span id="question-progress" class="text-sm font-black text-stone-500">
+            第 1 題 / 共 8 題
+          </span>
+        </div>
+
+        <!-- Question Display Box -->
+        <div id="activity-question-box" class="bg-white rounded-2xl p-5 sm:p-7 border-2 border-amber-200/80 shadow-inner text-center my-3">
+          <div id="q-emoji" class="text-4xl sm:text-5xl mb-2.5">🚰</div>
+          <h2 id="q-title" class="font-storybook text-xl sm:text-3xl font-black text-stone-800 leading-snug mb-2">
+            「家裡打開水龍頭，就能直接生飲或煮沸乾淨自來水的人，請站起來！」
+          </h2>
+          <p id="q-hint" class="text-xs sm:text-sm text-stone-500 font-medium">
+            請同學檢查卡片上的【🍚 飲食】欄位，符合條件的人請起立或舉手！
+          </p>
+        </div>
+
+        <!-- One-Click Reveal Statistics -->
+        <div class="flex flex-col items-center">
+          <button id="btn-reveal-stat" onclick="revealQuestionStat()" class="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-storybook text-sm sm:text-base font-black shadow-lg shadow-indigo-500/20 active:scale-95 transition flex items-center gap-2">
+            <span>📊</span>
+            <span>一鍵揭曉：30 張卡中有多少人符合？</span>
+          </button>
+
+          <!-- Revealed Stat Panel -->
+          <div id="q-stat-panel" class="hidden w-full mt-3 bg-indigo-50/80 border-2 border-indigo-200 rounded-2xl p-4 transition-all">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-2.5">
+              <div>
+                <div class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">全班 30 張卡片真實統計結果</div>
+                <div class="font-storybook text-xl sm:text-2xl font-black text-indigo-950">
+                  符合人數：<span id="q-match-count" class="text-indigo-600">0</span> / 30 人（約 <span id="q-match-percent">0</span>%）
+                </div>
+              </div>
+              <!-- Visual Progress Bar -->
+              <div class="w-full sm:w-64">
+                <div class="h-3.5 w-full bg-white rounded-full overflow-hidden border border-indigo-200 p-0.5">
+                  <div id="q-match-bar" class="h-full bg-indigo-600 rounded-full transition-all duration-700" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <p id="q-discussion" class="text-xs sm:text-sm text-stone-700 bg-white/90 p-3 rounded-xl border border-indigo-100 leading-relaxed mb-2.5">
+              <!-- Discussion prompt -->
+            </p>
+
+            <div>
+              <div class="text-[11px] font-bold text-stone-500 mb-1.5">符合此條件的孩子編號（點擊可看卡片）：</div>
+              <div id="q-match-badges" class="flex flex-wrap gap-1">
+                <!-- Matched kid tags -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prev / Next Question Navigation -->
+        <div class="flex items-center justify-between mt-4 pt-3 border-t border-stone-200/80 shrink-0">
+          <button onclick="changeQuestion(-1)" class="px-4 py-2 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 font-bold text-xs sm:text-sm text-stone-700 active:scale-95 transition">
+            ← 上一題
+          </button>
+          <div class="flex gap-1.5" id="q-dots"></div>
+          <button onclick="changeQuestion(1)" class="px-4 py-2 rounded-xl bg-stone-800 hover:bg-stone-900 text-white font-bold text-xs sm:text-sm active:scale-95 transition">
+            下一題 →
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- MODAL 1: Single Card Detail Modal                         -->
+  <!-- ========================================================= -->
+  <div id="detail-modal" class="fixed inset-0 z-50 hidden bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto" onclick="closeModalOnBackdrop(event, 'detail-modal')">
+    <div class="relative w-full max-w-2xl my-auto">
+      <button onclick="closeModal('detail-modal')" class="absolute -top-3 -right-3 z-10 w-10 h-10 rounded-full bg-stone-800 text-white font-black shadow-lg hover:bg-stone-900 flex items-center justify-center text-lg">
+        ✕
+      </button>
+      <div id="detail-modal-content" class="storybook-card rounded-3xl overflow-hidden">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL 2: Side-by-Side Comparison Modal                    -->
+  <!-- ========================================================= -->
+  <div id="compare-modal" class="fixed inset-0 z-50 hidden bg-stone-900/65 backdrop-blur-sm flex items-center justify-center p-2 sm:p-5 overflow-y-auto" onclick="closeModalOnBackdrop(event, 'compare-modal')">
+    <div id="compare-modal-container" class="relative w-full max-w-5xl bg-[#FDFBF7] rounded-3xl shadow-2xl border-2 border-stone-200 p-4 sm:p-6 my-auto max-h-[92vh] overflow-y-auto transition-all">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-stone-200">
+        <h3 class="font-storybook text-xl sm:text-2xl font-black text-stone-800 flex items-center gap-2">
+          <span>⚖️</span>
+          <span>世界孩子生活條件｜超級比一比</span>
+        </h3>
+        <button onclick="closeModal('compare-modal')" class="w-9 h-9 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-800 font-black flex items-center justify-center">
+          ✕
+        </button>
+      </div>
+      <div id="compare-modal-body" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Two cards rendered side by side -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification (replaces alert) -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-300 bg-stone-800 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-bold flex items-center gap-2">
+    <span id="toast-icon">✨</span>
+    <span id="toast-msg">提示訊息</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. COMPLETE DATABASE OF 30 WORLD KIDS CARDS
+    // =========================================================================
+    const KIDS_DATA = [
+      {
+        id: "01", zone: "A", zoneName: "A區｜資源充裕",
+        country: "挪威", city: "奧斯陸", flag: "🇳🇴",
+        name: "艾莉絲", age: "11 歲",
+        dailyCost: "約 NT$ 2,400 元／天", costValue: 2400,
+        housing: "暖氣充足的木造雙層公寓，有自己的獨立房間與書桌。",
+        food: "水龍頭可直接生飲山泉水；晚餐常吃煎鮭魚、馬鈴薯與新鮮莓果。",
+        school: "走路 10 分鐘到公立學校，免費提供平板電腦、午餐與滑雪課。",
+        afterSchool: "每週兩次參加足球隊練習，週末常跟家人去森林健行或露營。",
+        medical: "全民公費醫療完整，看病與牙科幾乎免費，社區診所設備先進。",
+        marriage: "法定 18 歲；普遍晚婚（平均 33 歲以上），重視個人生涯與自主選擇。",
+        wish: "煩惱冬天下午三點天就黑了；希望明年暑假能去西班牙海邊度假。"
+      },
+      {
+        id: "02", zone: "A", zoneName: "A區｜資源充裕",
+        country: "日本", city: "東京", flag: "🇯🇵",
+        name: "翔太", age: "12 歲",
+        dailyCost: "約 NT$ 1,650 元／天", costValue: 1650,
+        housing: "電車站附近的現代化集合住宅，空間不大但乾淨整齊。",
+        food: "自來水可生飲；在學校吃營養師調配的午餐，偶爾買超商飯糰。",
+        school: "自己搭電車通學，有社團活動，晚上還要去補習班準備中學入學考。",
+        afterSchool: "每天寫功課與複習到晚上九點半，睡前能玩 30 分鐘 Switch。",
+        medical: "國民健康保險完善，兒童醫療多有地方政府補助，就醫便利。",
+        marriage: "法定 18 歲；平均初婚約 30–31 歲，自由戀愛但年輕世代不婚率上升。",
+        wish: "睡眠不太夠、考試壓力大；希望考上理想國中並擁有新款遊戲機。"
+      },
+      {
+        id: "03", zone: "A", zoneName: "A區｜資源充裕",
+        country: "美國", city: "加州", flag: "🇺🇸",
+        name: "里歐", age: "11 歲",
+        dailyCost: "約 NT$ 2,200 元／天", costValue: 2200,
+        housing: "郊區獨棟房子，有前院草坪與停放兩輛汽車的車庫。",
+        food: "冰箱隨時有牛奶、果汁、起司與冷凍披薩，社區飲水安全無虞。",
+        school: "每天搭黃色校車上學，學校有電腦教室、樂團與多元社團選修。",
+        afterSchool: "參加社區棒球隊與程式設計營隊，常和朋友線上語音打遊戲。",
+        medical: "醫療技術頂尖但費用極高，家庭需仰賴公司提供的商業醫療保險。",
+        marriage: "法定 18 歲；平均初婚約 29–30 歲，強調個人自由與多元家庭型態。",
+        wish: "覺得青花菜很難吃；希望存夠零用錢買一雙限量版籃球鞋。"
+      },
+      {
+        id: "04", zone: "A", zoneName: "A區｜資源充裕",
+        country: "澳洲", city: "雪梨", flag: "🇦🇺",
+        name: "米亞", age: "12 歲",
+        dailyCost: "約 NT$ 2,100 元／天", costValue: 2100,
+        housing: "靠近海灘的平房，後院有小型游泳池與烤肉架。",
+        food: "三餐營養均衡，常吃烤雞、沙拉與各式水果，水電供應穩定。",
+        school: "穿整齊校服與防曬帽上學，戶外體育課與海洋生態課很多。",
+        afterSchool: "放學後常跟哥哥去海邊衝浪或遛狗，假日參加童軍團活動。",
+        medical: "擁有國民保健（Medicare），公立醫院免費，緊急救護系統健全。",
+        marriage: "法定 18 歲；平均初婚約 30 歲，自由戀愛且同居與晚婚相當普遍。",
+        wish: "夏天紫外線太強容易曬傷；希望長大成為海洋生物學家保護大堡礁。"
+      },
+      {
+        id: "05", zone: "A", zoneName: "A區｜資源充裕",
+        country: "台灣", city: "桃園", flag: "🇹🇼",
+        name: "子軒", age: "11 歲",
+        dailyCost: "約 NT$ 1,150 元／天", costValue: 1150,
+        housing: "電梯大樓三房兩廳，客廳有冷氣，與哥哥共用一間書房。",
+        food: "煮沸自來水或濾水器飲水；學校有營養午餐，晚餐吃家常菜或便當。",
+        school: "家長騎機車載去國小，用 iPad 上數位探究課，放學後去安親班。",
+        afterSchool: "寫完安親班功課後每週練兩次桌球，週末偶爾逛百貨公司或公園。",
+        medical: "全民健保覆蓋率近 100%，診所林立、掛號費低廉且看病極為方便。",
+        marriage: "法定 18 歲；平均初婚約 31–33 歲，自由戀愛並重視經濟獨立與育兒。",
+        wish: "覺得安親班考卷太多；希望段考進步，假日去兒童樂園玩一整天。"
+      },
+      {
+        id: "06", zone: "B", zoneName: "B區｜穩定小康",
+        country: "韓國", city: "釜山", flag: "🇰🇷",
+        name: "智雅", age: "12 歲",
+        dailyCost: "約 NT$ 1,050 元／天", costValue: 1050,
+        housing: "山坡上的老舊公寓，冬天有地暖，但隔音不太好。",
+        food: "家裡用濾水壺；學校午餐免費，晚餐常吃白飯、泡菜、海帶湯與煎蛋。",
+        school: "走路 15 分鐘上學，下課後立刻趕往英語與數學補習班。",
+        afterSchool: "晚上十點才回家，喜歡睡前用手機看 K-pop 偶像練習室影片。",
+        medical: "全民健保制度完善，大醫院醫療水準高，但門診自付額略高於台灣。",
+        marriage: "法定 19 歲；平均初婚約 32–34 歲，高房價與育兒成本讓年輕人晚婚。",
+        wish: "父母對成績期望很高、少有自由時間；希望能存錢買演唱會門票。"
+      },
+      {
+        id: "07", zone: "B", zoneName: "B區｜穩定小康",
+        country: "波蘭", city: "克拉科夫", flag: "🇵🇱",
+        name: "雅各", age: "11 歲",
+        dailyCost: "約 NT$ 780 元／天", costValue: 780,
+        housing: "市郊磚造集合住宅，與父母和妹妹同住兩房公寓。",
+        food: "自來水煮沸飲用；主食為黑麥麵包、馬鈴薯濃湯與香腸，冬天水果較貴。",
+        school: "搭公車 20 分鐘到公立小學，重視數學與外語，教室設備樸實。",
+        afterSchool: "在社區公園跟鄰居踢足球，回家後幫忙照顧 4 歲的妹妹。",
+        medical: "全民公費醫療（NFZ），基本就醫免費，但專科排隊等候時間較長。",
+        marriage: "法定 18 歲；平均初婚約 28–30 歲，傳統天主教婚禮儀式仍受重視。",
+        wish: "家裡只有一台舊筆電得跟姐姐輪流用；希望擁有一台自己的電腦。"
+      },
+      {
+        id: "08", zone: "B", zoneName: "B區｜穩定小康",
+        country: "巴西", city: "聖保羅", flag: "🇧🇷",
+        name: "盧卡斯", age: "12 歲",
+        dailyCost: "約 NT$ 420 元／天", costValue: 420,
+        housing: "城市邊緣紅磚平房，社區治安較差，天黑後父母不准單獨出門。",
+        food: "偶爾遇到限水停水，屋頂備有儲水桶；主食是黑豆飯、木薯粉與雞肉。",
+        school: "上「上午班」學校（7:00–12:00），教室沒有冷氣，夏天非常悶熱。",
+        afterSchool: "下午在水泥空地赤腳踢足球，晚上幫媽媽整理資源回收貼補家用。",
+        medical: "有免費公立醫療（SUS），但診所常大排長龍且缺藥，富裕者才買私保。",
+        marriage: "法定 18 歲；貧困社區偶有未滿 18 歲早婚或同居，都市則多在 28 歲後。",
+        wish: "球場沒草皮跌倒常擦傷；夢想成為職業足球員，幫家裡買安全房子。"
+      },
+      {
+        id: "09", zone: "B", zoneName: "B區｜穩定小康",
+        country: "土耳其", city: "伊斯坦堡", flag: "🇹🇷",
+        name: "艾莉芙", age: "11 歲",
+        dailyCost: "約 NT$ 480 元／天", costValue: 480,
+        housing: "熱鬧街區公寓，靠近清真寺，每天聽得到禮拜廣播聲。",
+        food: "買桶裝礦泉水飲用；早餐有烤餅、橄欖、起司與紅茶，晚餐常吃扁豆湯。",
+        school: "公立小學採上下午分流制，一班有 38 個學生，老師管得很嚴。",
+        afterSchool: "放學後到爸爸經營的小雜貨店幫忙顧店、搬運飲料箱。",
+        medical: "擁有全民健保，公立醫院掛號免費，但近年通膨導致部分藥品短缺。",
+        marriage: "法定 18 歲；都市年輕人約 26–28 歲結婚，偏鄉仍保留傳統家庭媒合。",
+        wish: "物價上漲很快、零食越來越貴；希望能考上免費的重點中學。"
+      },
+      {
+        id: "10", zone: "B", zoneName: "B區｜穩定小康",
+        country: "馬來西亞", city: "檳城", flag: "🇲🇾",
+        name: "偉銘", age: "12 歲",
+        dailyCost: "約 NT$ 560 元／天", costValue: 560,
+        housing: "排屋社區，只有主臥室裝冷氣，全家人晚上常一起睡客廳吹電風扇。",
+        food: "煮沸自來水飲用；三餐常在熟食中心解決，吃炒粿條、雞飯與拉茶。",
+        school: "就讀華文小學，每天要學華語、馬來語與英語三種語言，書包很重。",
+        afterSchool: "下午參加學校羽球社團，晚上在家看電視連續劇或幫奶奶按摩。",
+        medical: "政府診所與公立醫院看病僅需象徵性 1 令吉（約台幣 7 元），但候診久。",
+        marriage: "法定 18 歲（部分州伊斯蘭法例外）；多元族群各自保有傳統婚俗。",
+        wish: "三種語言聽寫都要背、壓力不小；希望代表學校參加全州羽球賽。"
+      },
+      {
+        id: "11", zone: "B", zoneName: "B區｜穩定小康",
+        country: "墨西哥", city: "瓜達拉哈拉", flag: "🇲🇽",
+        name: "蘇菲亞", age: "11 歲",
+        dailyCost: "約 NT$ 450 元／天", costValue: 450,
+        housing: "色彩繽紛的平房，與祖父母、叔叔一家共 9 個人同住一個大院子。",
+        food: "飲水向水車購買大桶純淨水；主食是玉米餅（Tortilla）、豆泥與酪梨。",
+        school: "走路 25 分鐘上學，學校免費提供教科書，但美術用品要自己想辦法。",
+        afterSchool: "在院子裡幫奶奶包玉米粽（Tamales）準備隔天早上拿去市場賣。",
+        medical: "勞工享有社會保險醫療，但非正式就業者只能去資源有限的社區診所。",
+        marriage: "法定 18 歲；平均初婚約 25–27 歲，家族觀念濃厚，婚禮重視親友團聚。",
+        wish: "家裡人多很熱鬧，但幾乎沒安靜寫作業的角落；希望未來當一名護理師。"
+      },
+      {
+        id: "12", zone: "B", zoneName: "B區｜穩定小康",
+        country: "南非", city: "開普敦", flag: "🇿🇦",
+        name: "塔博", age: "12 歲",
+        dailyCost: "約 NT$ 340 元／天", costValue: 340,
+        housing: "市郊政府安置平房，每天會遇到幾小時的「分區輪流停電」。",
+        food: "社區共用自來水系統；晚餐常吃玉米糊（Pap）、燉菜與偶爾的烤肉。",
+        school: "搭小巴去鎮上學校，教室缺實驗器材，科學課只能看黑板抄筆記。",
+        afterSchool: "停電時點蠟燭或用太陽能小燈寫功課，平時喜歡和朋友編排街舞。",
+        medical: "公立診所免費但人力嚴重不足；只有約 16% 富裕人口負擔得起私保。",
+        marriage: "法定 18 歲；傳統習俗中男方需準備聘禮（Lobola），平均婚齡約 30 歲。",
+        wish: "停電時無法幫手機充電、常錯過線上作業；希望家裡能裝設太陽能板。"
+      },
+      {
+        id: "13", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "越南", city: "湄公河三角洲", flag: "🇻🇳",
+        name: "阿蘭", age: "11 歲",
+        dailyCost: "約 NT$ 210 元／天", costValue: 210,
+        housing: "河邊的高腳木屋，雨季淹水時水會淹到家門口台階。",
+        food: "收集雨水過濾並煮沸飲用；餐桌上是白飯、河魚、空心菜與魚露。",
+        school: "每天早上自己划小木船 20 分鐘到對岸小學上課，雨天全身常淋濕。",
+        afterSchool: "放學後要幫忙餵鴨子、採收水上蔬菜，並照顧年幼的弟弟。",
+        medical: "學生有基本醫療保險，但村裡只有衛生站，重病得搭船轉診到省城醫院。",
+        marriage: "男 20 歲、女 18 歲；農村結婚較早（約 22–24 歲），重視傳宗接代。",
+        wish: "擔心颱風季河水暴漲沖壞木屋；希望能擁有一件防水雨衣與新書包。"
+      },
+      {
+        id: "14", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "印尼", city: "蘇門答臘", flag: "🇮🇩",
+        name: "布迪", age: "12 歲",
+        dailyCost: "約 NT$ 195 元／天", costValue: 195,
+        housing: "油棕園旁的簡陋木板屋，屋頂是鐵皮，中午室內像烤箱一樣熱。",
+        food: "使用井水，旱季井水變混濁；三餐以白飯、天貝（發酵黃豆）與辣醬為主。",
+        school: "走路 40 分鐘沿泥土路上學，許多同學國中畢業就不再升學。",
+        afterSchool: "週末與放學後跟父母到油棕園撿拾掉落的油棕果實，賺取微薄工資。",
+        medical: "政府推行全民健保（BPJS），但偏鄉診所缺醫生，常先買成藥或草藥。",
+        marriage: "法定 19 歲；偏鄉仍有部分家庭因經濟壓力讓孩子在 18 歲前早婚。",
+        wish: "搬運果實常被刺傷手掌；希望能順利讀完國中，去大城市找辦公室工作。"
+      },
+      {
+        id: "15", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "印度", city: "拉賈斯坦邦", flag: "🇮🇳",
+        name: "普里婭", age: "11 歲",
+        dailyCost: "約 NT$ 135 元／天", costValue: 135,
+        housing: "乾燥沙漠邊緣的泥磚屋，家裡無獨立廁所，晚上得結伴走到村外。",
+        food: "每天清晨走 2 公里到公用水井提兩大桶水；主食是烤餅與扁豆咖哩。",
+        school: "若家裡農忙或媽媽生病，她就必須請假留在家煮飯、照顧弟妹。",
+        afterSchool: "撿拾乾燥牛糞做成燃料餅，晚上在昏暗燈泡下練習寫印地語字母。",
+        medical: "公立醫院免費但距離遙遠、衛生條件差，許多村民延誤就醫導致重症。",
+        marriage: "法定男 21 歲、女 18 歲（擬提高至 21 歲）；農村仍有童婚與嫁妝習俗。",
+        wish: "村裡很多女孩 14 歲就被安排結婚；希望堅持讀到高中成為村裡女老師。"
+      },
+      {
+        id: "16", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "菲律賓", city: "馬尼拉", flag: "🇵🇭",
+        name: "馬可", age: "12 歲",
+        dailyCost: "約 NT$ 185 元／天", costValue: 185,
+        housing: "高架橋旁的違建鐵皮屋，全家人擠在不到 4 坪的空間裡打地鋪睡覺。",
+        food: "向鄰居接水龍頭買水；常吃白飯配醬油或路邊攤買的一小袋燉肉湯。",
+        school: "公立學校教室不夠，只能上「下午班」，早上在市場幫忙搬貨。",
+        afterSchool: "晚上在昏暗路燈下寫功課，週末去垃圾山附近撿寶特瓶與廢鐵變賣。",
+        medical: "雖有 PhilHealth 保險，但自費項目多，貧困家庭生病常無力負擔藥費。",
+        marriage: "法定 18 歲；天主教文化影響深，法律禁止離婚，貧民區早育現象普遍。",
+        wish: "下雨天屋頂會漏水、課本常被淋濕；希望有一張不會被雨淋濕的書桌。"
+      },
+      {
+        id: "17", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "埃及", city: "開羅近郊", flag: "🇪🇬",
+        name: "奧瑪", age: "11 歲",
+        dailyCost: "約 NT$ 165 元／天", costValue: 165,
+        housing: "未完工的紅磚公寓頂樓，牆壁沒有粉刷，夏天炎熱、冬天風大。",
+        food: "政府補貼的扁麵包（Aish）是每餐主角，搭配蠶豆泥與醃菜。",
+        school: "一間教室擠了 50 多名學生，兩個人共用一張破舊木桌椅。",
+        afterSchool: "放學後到修車廠當學徒，幫忙遞扳手與洗零件，每天賺約台幣 30 元。",
+        medical: "公立醫院藥品與病床短缺，窮人看病常需自掏腰包去外面藥局買藥。",
+        marriage: "法定 18 歲；男方需負擔新房與聘金，近年經濟困難導致許多年輕人晚婚。",
+        wish: "手上總有洗不掉的黑油漬；希望存錢幫患有氣喘的爸爸買藥。"
+      },
+      {
+        id: "18", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "秘魯", city: "安第斯山區", flag: "🇵🇪",
+        name: "卡門", age: "12 歲",
+        dailyCost: "約 NT$ 230 元／天", costValue: 230,
+        housing: "海拔 3,800 公尺的石頭小屋，屋頂鋪乾草，夜晚氣溫常降到零度以下。",
+        food: "飲用高山融雪溪水；主食是風乾馬鈴薯（Chuño）、藜麥湯與偶爾羊駝肉。",
+        school: "每天翻越兩座山頭走 1.5 小時去雙語小學，教室沒暖氣，穿厚毛衣上課。",
+        afterSchool: "趕著羊駝群到山坡吃草，並跟著媽媽學習用傳統織布機編織毛毯。",
+        medical: "高山村落僅有簡易衛生站，一週只有幾天有醫護人員駐診，缺禦寒醫療。",
+        marriage: "法定 18 歲；安第斯原住民社群重視家族互助，通常在 20 歲出頭成家。",
+        wish: "冬天手腳常長凍瘡又紅又癢；希望擁有一雙保暖防滑的登山靴。"
+      },
+      {
+        id: "19", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "蒙古", city: "烏蘭巴托郊區", flag: "🇲🇳",
+        name: "巴圖", age: "11 歲",
+        dailyCost: "約 NT$ 245 元／天", costValue: 245,
+        housing: "城市邊緣傳統蒙古包（Ger），冬天靠燒煤爐取暖，空氣瀰漫濃濃煤煙。",
+        food: "冬天要去社區取水站排隊買水，推推車運水桶回家；常吃羊肉麵與奶茶。",
+        school: "走 30 分鐘雪地上學，學校有暖氣，是他冬天最喜歡待的地方。",
+        afterSchool: "劈柴、生火爐，並與哥哥一起摔角練習，維持游牧民族的傳統體能。",
+        medical: "兒童享有公費醫療，但冬天嚴重空污導致呼吸道疾病患者擠滿醫院。",
+        marriage: "法定 18 歲；平均初婚約 26 歲，游牧家庭結婚時長輩常贈送牲畜或蒙古包。",
+        wish: "冬天空氣污染嚴重、全家人常咳嗽；希望搬進有自來水與暖氣的樓房。"
+      },
+      {
+        id: "20", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "孟加拉", city: "達卡", flag: "🇧🇩",
+        name: "娜迪亞", age: "12 歲",
+        dailyCost: "約 NT$ 125 元／天", costValue: 125,
+        housing: "低窪河岸旁的竹編小屋，每年雨季都面臨洪水威脅。",
+        food: "手壓幫浦抽取地下水（部分含砷需分辨）；三餐是白飯配小魚乾與蔬菜。",
+        school: "在非營利組織設立的「船上學校」上課，教室就在一艘改裝的大木船裡。",
+        afterSchool: "在家幫媽媽縫製成衣廠外包的鈕扣與刺繡，做到眼睛痠痛才休息。",
+        medical: "醫療資源極度匱乏，平均每萬人不到 7 位醫生，窮人常無力負擔住院費。",
+        marriage: "法定男 21 歲、女 18 歲；童婚率居亞洲之冠，許多貧困女孩 15 歲前出嫁。",
+        wish: "擔心洪水又把家園沖毀；希望能繼續讀書，長大設計不會淹水的房子。"
+      },
+      {
+        id: "21", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "肯亞", city: "奈洛比郊區", flag: "🇰🇪",
+        name: "薩繆爾", age: "11 歲",
+        dailyCost: "約 NT$ 110 元／天", costValue: 110,
+        housing: "鐵皮與泥巴搭建的小屋，無自來水管線，夜晚用煤油燈或太陽能手電筒。",
+        food: "買不起肉，主食是玉米麵糊（Ugali）配羽衣甘藍菜；學校提供免費午餐粥。",
+        school: "為了吃到學校免費午餐，每天風雨無阻走 45 分鐘上學，非常珍惜課本。",
+        afterSchool: "用廢棄塑膠袋與舊布料綑綁成一顆足球，在紅土空地上跟朋友比賽。",
+        medical: "公立診所常缺乏瘧疾與抗生素藥品，許多家庭靠社區志工進行基本衛教。",
+        marriage: "法定 18 歲；都市年輕人多自由戀愛，偏鄉部分族群仍保有聘禮制度。",
+        wish: "鞋子破了大洞、腳趾露在外面；希望有一雙合腳的運動鞋參加長跑比賽。"
+      },
+      {
+        id: "22", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "玻利維亞", city: "波托西", flag: "🇧🇴",
+        name: "馬特奧", age: "12 歲",
+        dailyCost: "約 NT$ 175 元／天", costValue: 175,
+        housing: "礦區山坡上的簡陋磚房，自來水每週只供應兩天，必須用大水缸囤水。",
+        food: "主食是馬鈴薯、玉米與米飯，蔬菜與水果在海拔高的礦區非常昂貴。",
+        school: "早上在公立學校上課，但因為經常疲勞打瞌睡，學習進度落後許多。",
+        afterSchool: "下午跟著表哥進入又黑又悶的銀礦坑外圍搬運礦石，賺取生活費。",
+        medical: "礦工職業病與肺部疾病普遍，但礦區缺乏專科醫院，就醫需長途跋涉。",
+        marriage: "法定 18 歲（父母同意可 16 歲）；礦區生活艱苦，年輕人常提早同居分擔生計。",
+        wish: "礦坑粉塵讓他常呼吸不順；希望能離開礦山，去大城市當汽車修理技師。"
+      },
+      {
+        id: "23", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "柬埔寨", city: "暹粒鄉村", flag: "🇰🇭",
+        name: "索菲", age: "11 歲",
+        dailyCost: "約 NT$ 140 元／天", costValue: 140,
+        housing: "棕櫚葉與木板搭建的吊腳屋，屋下養著幾隻雞與一頭瘦弱的水牛。",
+        food: "池塘水或井水煮沸飲用；每天吃白飯配發酵魚醬（Prahok）與空心菜。",
+        school: "騎沒有煞車的二手舊腳踏車去 5 公里外的學校，學校缺乏圖書室。",
+        afterSchool: "下田插秧、除草，或在觀光區路口向遊客兜售明信片與編織手環。",
+        medical: "鄉村衛生所設備簡陋，重病得去慈善兒童醫院排隊或借錢去私人診所。",
+        marriage: "法定 18 歲；農村青年多在 20–23 歲結婚，由父母媒合與年輕人意見並重。",
+        wish: "雨季泥巴路太滑常摔車；希望能多賣幾條手環，買齊新學期的文具。"
+      },
+      {
+        id: "24", zone: "C", zoneName: "C區｜辛苦打拚",
+        country: "瓜地馬拉", city: "高地村落", flag: "🇬🇹",
+        name: "羅莎", age: "12 歲",
+        dailyCost: "約 NT$ 160 元／天", costValue: 160,
+        housing: "火山腳下的土坯房，廚房使用柴火灶，煮飯時屋裡總是煙霧瀰漫。",
+        food: "山泉水常因暴雨變混濁；三餐幾乎都是黑豆、玉米餅與一點點鹽巴。",
+        school: "家裡講原住民馬雅方言，學校用西班牙語教學，她聽課非常吃力。",
+        afterSchool: "凌晨四點起床幫忙磨玉米粉、生火做早餐，下午去山坡撿拾木柴。",
+        medical: "原住民山區醫療資源嚴重不足，兒童慢性營養不良比例高，缺乏定期健檢。",
+        marriage: "法定 18 歲；高地貧困村落仍有不少少女在 16–17 歲便早婚生子。",
+        wish: "長期營養不良讓她比同齡孩子矮小；希望有一天能看懂整本西班牙語故事書。"
+      },
+      {
+        id: "25", zone: "D", zoneName: "D區｜脆弱處境",
+        country: "象牙海岸", city: "可可農村", flag: "🇨🇮",
+        name: "科菲", age: "11 歲",
+        dailyCost: "約 NT$ 75 元／天", costValue: 75,
+        housing: "森林邊緣的泥巴茅草屋，沒有電力、沒有自來水，也沒有診所。",
+        food: "從泥濘溪流取水；三餐吃水煮樹薯與香蕉泥，種可可卻幾乎沒吃過巧克力。",
+        school: "村裡沒有學校，最近的小學在 12 公里外，他從未進過教室、不識字。",
+        afterSchool: "每天拿著重重的開山刀劈開可可豆莢、搬運麻袋，雙手佈滿疤痕。",
+        medical: "村裡完全沒有醫生，感染瘧疾或受傷時只能靠草藥敷傷，死亡風險高。",
+        marriage: "法定 18 歲；偏遠農村缺乏戶政登記，許多女孩在 14–16 歲便被迫早婚。",
+        wish: "很想知道「巧克力」到底是什麼味道；最大願望是能去學校學會寫名字。"
+      },
+      {
+        id: "26", zone: "D", zoneName: "D區｜脆弱處境",
+        country: "馬達加斯加", city: "南部旱區", flag: "🇲🇬",
+        name: "拉庫圖", age: "11 歲",
+        dailyCost: "約 NT$ 52 元／天", costValue: 52,
+        housing: "用木枝與破布搭起的簡陋窩棚，連續三年大旱讓農田完全龜裂。",
+        food: "水比黃金還珍貴，有時只能啃仙人掌果實解渴，晚餐常只有一碗稀木薯湯。",
+        school: "原本有上小學，但因為飢荒，全家人必須四處尋找食物而被迫輟學。",
+        afterSchool: "每天頂著烈日走好幾公里，幫家裡尋找可食用的野生植物根莖或撿木柴。",
+        medical: "嚴重營養不良普遍，最近的衛生中心需步行數小時，且常無藥可用。",
+        marriage: "法定 18 歲；飢荒時期部分貧困家庭會為換取糧食或聘禮讓少女早婚。",
+        wish: "肚子經常餓得睡不著覺；希望老天趕快下一場大雨，讓田裡重新長出玉米。"
+      },
+      {
+        id: "27", zone: "D", zoneName: "D區｜脆弱處境",
+        country: "阿富汗", city: "喀布爾", flag: "🇦🇫",
+        name: "瑪麗亞姆", age: "12 歲",
+        dailyCost: "約 NT$ 68 元／天", costValue: 68,
+        housing: "戰火受損後修補的泥磚平房，冬天沒有暖氣，全家人裹著舊毛毯取暖。",
+        food: "父親失業後收入中斷，常靠國際救援組織發放的麵粉與食用油度日。",
+        school: "因當地規定女孩小學畢業後禁止繼續上中學，她被迫停學待在家裡。",
+        afterSchool: "在家偷偷閱讀哥哥帶回來的舊課本，並幫媽媽織地毯換取微薄收入。",
+        medical: "女性就醫受限且缺乏女醫師，藥品價格高昂，寒冬兒童肺炎十分致命。",
+        marriage: "家庭由男性長輩包辦婚姻，近年經濟崩潰導致許多女孩未成年就被迫出嫁。",
+        wish: "每天看著哥哥背書包出門卻不能去、心裡很難過；希望女孩也能自由上學。"
+      },
+      {
+        id: "28", zone: "D", zoneName: "D區｜脆弱處境",
+        country: "葉門", city: "荷台達", flag: "🇾🇪",
+        name: "塔里克", age: "11 歲",
+        dailyCost: "約 NT$ 58 元／天", costValue: 58,
+        housing: "內戰砲火摧毀了家園，目前與媽媽、妹妹住在臨時搭建的難民帳篷裡。",
+        food: "每天排隊領取救援水車的配給水與救濟糧，衛生差、常有霍亂與腹瀉。",
+        school: "原本的學校變成了避難所，現在偶爾在志工搭起的露天帆布棚下上課。",
+        afterSchool: "在營區幫忙搬運物資、照顧生病的妹妹，聽到遠處巨響就會立刻躲起來。",
+        medical: "全國半數以上醫院遭戰火毀損，僅靠聯合國與無國界醫生提供緊急醫療。",
+        marriage: "流離失所家庭為減輕糧食負擔，戰亂期間童婚比例大幅上升。",
+        wish: "晚上常做噩夢驚醒；唯一的願望是戰爭趕快結束，能回到原本有屋頂的家。"
+      },
+      {
+        id: "29", zone: "D", zoneName: "D區｜脆弱處境",
+        country: "海地", city: "太子港", flag: "🇭🇹",
+        name: "克萊兒", age: "12 歲",
+        dailyCost: "約 NT$ 85 元／天", costValue: 85,
+        housing: "地震與幫派衝突後的臨時安置區，四周治安動盪，經常聽見槍聲。",
+        food: "乾淨飲水極度缺乏，一家人常常一天只能吃到一頓簡單的豆子飯。",
+        school: "學校因幫派封鎖與安全問題經常停課，即使開學也缺乏課本與老師。",
+        afterSchool: "跟在媽媽身邊在路邊擺小攤賣幾顆芒果或木炭，隨時準備躲避衝突。",
+        medical: "多數醫院因治安與電力中斷關閉，受傷或感染霍亂時極難獲得救治。",
+        marriage: "法定 18 歲；長期動盪與貧困使許多青少年缺乏保護，早婚與早育常見。",
+        wish: "害怕出門遇見危險；希望能住在一個晚上可以安心睡覺、不會肚子餓的地方。"
+      },
+      {
+        id: "30", zone: "D", zoneName: "D區｜脆弱處境",
+        country: "南蘇丹", city: "尼羅河流域", flag: "🇸🇸",
+        name: "阿基爾", age: "11 歲",
+        dailyCost: "約 NT$ 45 元／天", costValue: 45,
+        housing: "洪水淹沒村莊後，全家逃到高地搭起的簡易草棚，蚊蟲多、易染瘧疾。",
+        food: "直接飲用混濁的河水，三餐靠捕魚與野生草籽維生，缺乏乾淨糧食。",
+        school: "全村沒有校舍，志工老師偶爾在樹下用木棍在沙地上教寫字與算數。",
+        afterSchool: "幫爸爸修補漁網、看守家裡僅剩的兩頭山羊，晚上圍著營火聽故事。",
+        medical: "全球醫療最匱乏地區之一，沒有診所與藥品，發燒或腹瀉都可能危及生命。",
+        marriage: "傳統習俗以牛隻作為聘禮，貧困家庭常在女兒 15–16 歲時便安排出嫁。",
+        wish: "弟弟發高燒卻沒有醫生可以看病；希望村裡能有一間診所和一間真正的教室。"
+      }
+    ];
+
+    // Zone Visual Theme Config
+    const ZONE_THEMES = {
+      A: {
+        badgeBg: "bg-blue-600",
+        headerBg: "bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50",
+        border: "border-blue-200",
+        costBg: "bg-blue-600 text-white",
+        costSub: "text-blue-100",
+        pill: "bg-blue-100 text-blue-800 border-blue-200",
+        accentText: "text-blue-700"
+      },
+      B: {
+        badgeBg: "bg-emerald-600",
+        headerBg: "bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50",
+        border: "border-emerald-200",
+        costBg: "bg-emerald-600 text-white",
+        costSub: "text-emerald-100",
+        pill: "bg-emerald-100 text-emerald-800 border-emerald-200",
+        accentText: "text-emerald-700"
+      },
+      C: {
+        badgeBg: "bg-amber-600",
+        headerBg: "bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50",
+        border: "border-amber-200",
+        costBg: "bg-amber-600 text-white",
+        costSub: "text-amber-100",
+        pill: "bg-amber-100 text-amber-800 border-amber-200",
+        accentText: "text-amber-700"
+      },
+      D: {
+        badgeBg: "bg-rose-600",
+        headerBg: "bg-gradient-to-r from-rose-50 via-red-50 to-orange-50",
+        border: "border-rose-200",
+        costBg: "bg-rose-600 text-white",
+        costSub: "text-rose-100",
+        pill: "bg-rose-100 text-rose-800 border-rose-200",
+        accentText: "text-rose-700"
+      }
+    };
+
+    // =========================================================================
+    // 2. CLASSROOM STAND-UP ACTIVITY QUESTIONS (8 Guided Prompts)
+    // =========================================================================
+    const ACTIVITY_QUESTIONS = [
+      {
+        emoji: "🚰",
+        title: "「家裡打開水龍頭（或濾水器），就能直接喝到乾淨飲水的人，請站起來！」",
+        hint: "請同學檢查卡片上的【🍚 飲食】欄位（不包含要走幾公里挑水、喝雨水、溪水或買水車的水）。",
+        matchedIds: ["01", "02", "03", "04", "05", "06", "07", "10", "12"],
+        discussion: "在 30 張卡中只有 9 人（約 30%）在家就能方便取得乾淨自來水！世界上有超過 20 億人缺乏安全飲用水，許多孩子每天清晨必須先花好幾個小時挑水，才能去上學。"
+      },
+      {
+        emoji: "💵",
+        title: "「每天生活費超過『新台幣 500 元』的人，請往前走一大步！」",
+        hint: "請看卡片最上方的【💰 每日生活費】色塊金額。",
+        matchedIds: ["01", "02", "03", "04", "05", "06", "07", "10"],
+        discussion: "全班 30 人中只有 8 人（約 27%）每天生活費超過台幣 500 元！台灣孩子（05 子軒）每天約 1,150 元，其實已經排在全球前 20% 的富裕行列了。"
+      },
+      {
+        emoji: "🪙",
+        title: "「每天生活費不到『新台幣 100 元』的人，請舉起雙手！」",
+        hint: "想想看：在台灣，不到 100 元可能只夠買一個便當或兩杯飲料，但這是他們一整天食衣住行的全部預算。",
+        matchedIds: ["25", "26", "27", "28", "29", "30"],
+        discussion: "D 區這 6 位孩子（約佔全球 20%）生活在世界銀行定義的「極端貧窮線」邊緣，每天僅有台幣 45～85 元，連三餐溫飽與乾淨飲水都是奢求。"
+      },
+      {
+        emoji: "🎒",
+        title: "「放學後『不用』打工賺錢、劈可可、撿回收或顧店貼補家用的人，請點點頭！」",
+        hint: "請檢視卡片上的【⏰ 課後】欄位，看看放學後的時間是屬於自己，還是必須分擔家計？",
+        matchedIds: ["01", "02", "03", "04", "05", "06", "07", "10", "12"],
+        discussion: "全球有超過三分之二的孩子放學後必須立刻投入勞動（農務、礦坑、擺攤、撿回收或照顧弟妹）。能專心寫功課、練才藝或玩遊戲，並不是理所當然的事。"
+      },
+      {
+        emoji: "🏫",
+        title: "「確定自己明年一定能順利繼續上學、不會因為貧窮、性別或戰亂失學的人，請站起來！」",
+        hint: "請檢視卡片上的【🎒 上學】與【💭 心願】欄位。",
+        matchedIds: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+        discussion: "在 C 區與 D 區，許多孩子面臨隨時可能因旱災飢荒（26 拉庫圖）、禁止女孩就讀中學（27 瑪麗亞姆）、戰爭砲火（28 塔里克）或幫派封鎖（29 克萊兒）而被迫中斷學業。"
+      },
+      {
+        emoji: "🏥",
+        title: "「生病或受傷時，附近就有醫院或診所，而且家裡負擔得起醫藥費的人，請舉手！」",
+        hint: "請檢視卡片上的【🏥 醫療】欄位，比較各國就醫的方便程度與費用。",
+        matchedIds: ["01", "02", "03", "04", "05", "06", "07", "09", "10", "19"],
+        discussion: "台灣的全民健保（05 子軒）讓就醫既便宜又方便；但在許多國家，生一場瘧疾、肺炎或氣喘，卻可能因為沒有醫生、缺藥或付不出醫藥費而危及生命。"
+      },
+      {
+        emoji: "💍",
+        title: "「在你的國家，長大後可以自由選擇結婚對象，而且不會在 18 歲前被迫早婚的人，請拍拍手！」",
+        hint: "請檢視卡片上的【💍 結婚】欄位，觀察法律規定與實際社會現況的落差。",
+        matchedIds: ["01", "02", "03", "04", "05", "06", "07", "09", "10", "11", "12", "13", "16", "17", "18", "19", "21", "23"],
+        discussion: "聯合國《兒童權利公約》明訂未滿 18 歲為兒童。但在極度貧窮與戰亂地區（如 15 印度、20 孟加拉、27 阿富汗、30 南蘇丹），許多女孩在 14–16 歲就被迫早婚以減輕家庭糧食負擔或換取聘禮。"
+      },
+      {
+        emoji: "⚡",
+        title: "「家裡每天 24 小時都有穩定電力、電燈和網路可以使用的人，請站起來！」",
+        hint: "請檢視卡片上的【🏠 居住】與【⏰ 課後】欄位。",
+        matchedIds: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"],
+        discussion: "從南非（12 塔博）的每天輪流停電、肯亞（21 薩繆爾）的煤油燈，到完全沒有電力的象牙海岸（25 科菲），穩定的電力與網路是現代教育差距的重要關鍵。"
+      }
+    ];
+
+    // =========================================================================
+    // 3. STATE & WEB AUDIO API SOUND SYNTHESIZER
+    // =========================================================================
+    let remainingIds = KIDS_DATA.map(k => k.id);
+    let currentCard = null;
+    let isFlipped = false;
+    let mysteryMode = false;
+    let drawnHistory = [];
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    let isFullscreen = false;
+    let isProjectorZoom = false;
+
+    let currentGalleryFilter = "ALL";
+    let currentGalleryPage = 1;
+    const GALLERY_PAGE_SIZE = 6;
+    let compareSelection = [];
+    let currentQuestionIdx = 0;
+
+    // =========================================================================
+    // FULLSCREEN PROJECTION & CLASSROOM PROJECTOR ZOOM MODE
+    // =========================================================================
+    function isNativeFullscreenActive() {
+      return !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+    }
+
+    function updateFullscreenButtonUI() {
+      const btn = document.getElementById("btn-fullscreen");
+      const icon = document.getElementById("fullscreen-icon");
+      const label = document.getElementById("fullscreen-label");
+
+      if (isFullscreen) {
+        btn.classList.remove("bg-stone-800", "hover:bg-stone-900", "border-stone-800");
+        btn.classList.add("bg-rose-600", "hover:bg-rose-700", "border-rose-700");
+        icon.textContent = "🗗";
+        label.textContent = "退出全螢幕";
+      } else {
+        btn.classList.add("bg-stone-800", "hover:bg-stone-900", "border-stone-800");
+        btn.classList.remove("bg-rose-600", "hover:bg-rose-700", "border-rose-700");
+        icon.textContent = "🖥️";
+        label.textContent = "全螢幕投影";
+      }
+    }
+
+    async function toggleFullscreen() {
+      playSound("pop");
+      const docEl = document.documentElement;
+
+      // If currently active (either native or theater fallback), exit
+      if (isFullscreen) {
+        document.body.classList.remove("is-theater-fullscreen");
+        if (isNativeFullscreenActive()) {
+          try {
+            if (document.exitFullscreen) await document.exitFullscreen();
+            else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+            else if (document.msExitFullscreen) await document.msExitFullscreen();
+          } catch (e) {
+            // Ignore exit errors
+          }
+        }
+        isFullscreen = false;
+        updateFullscreenButtonUI();
+        showToast("已退出全螢幕模式", "🗗");
+        return;
+      }
+
+      // Attempt native Fullscreen API first, with graceful CSS theater-mode fallback
+      let nativeSucceeded = false;
+      try {
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen();
+          nativeSucceeded = true;
+        } else if (docEl.webkitRequestFullscreen) {
+          await docEl.webkitRequestFullscreen();
+          nativeSucceeded = true;
+        } else if (docEl.msRequestFullscreen) {
+          await docEl.msRequestFullscreen();
+          nativeSucceeded = true;
+        }
+      } catch (err) {
+        nativeSucceeded = false;
+      }
+
+      if (!nativeSucceeded) {
+        // Fallback for sandboxed iframe environments
+        document.body.classList.add("is-theater-fullscreen");
+      }
+
+      isFullscreen = true;
+      updateFullscreenButtonUI();
+
+      // Auto-enable Projector Zoom if not yet enabled so class can see clearly right away
+      if (!isProjectorZoom) {
+        toggleProjectorZoom(true);
+      }
+      showToast("已開啟全螢幕投影模式（按 F 或 ESC 退出）", "🖥️");
+    }
+
+    // Sync state if user presses browser ESC key in native fullscreen
+    ["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "MSFullscreenChange"].forEach(evt => {
+      document.addEventListener(evt, () => {
+        const active = isNativeFullscreenActive();
+        if (!active && !document.body.classList.contains("is-theater-fullscreen")) {
+          isFullscreen = false;
+          updateFullscreenButtonUI();
+        }
+      });
+    });
+
+    function toggleProjectorZoom(forceState) {
+      isProjectorZoom = typeof forceState === "boolean" ? forceState : !isProjectorZoom;
+      if (typeof forceState !== "boolean") playSound("pop");
+
+      const btn = document.getElementById("btn-projector-zoom");
+      const icon = document.getElementById("zoom-icon");
+      const label = document.getElementById("zoom-label");
+
+      if (isProjectorZoom) {
+        document.body.classList.add("projector-zoom");
+        btn.classList.remove("bg-white", "text-stone-700", "border-stone-200");
+        btn.classList.add("bg-amber-500", "text-white", "border-amber-600");
+        icon.textContent = "🔎";
+        label.textContent = "大螢幕放大中";
+        if (typeof forceState !== "boolean") {
+          showToast("已開啟大螢幕投影放大模式（字體放大・隱藏側欄）", "🔎");
+        }
+      } else {
+        document.body.classList.remove("projector-zoom");
+        btn.classList.add("bg-white", "text-stone-700", "border-stone-200");
+        btn.classList.remove("bg-amber-500", "text-white", "border-amber-600");
+        icon.textContent = "🔍";
+        label.textContent = "大螢幕放大";
+        if (typeof forceState !== "boolean") {
+          showToast("已恢復標準版面大小", "🔍");
+        }
+      }
+    }
+
+    // Keyboard shortcuts for smooth classroom presentation
+    document.addEventListener("keydown", (e) => {
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : "";
+      if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+
+      // Press 'F' to toggle Fullscreen Projection
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        toggleFullscreen();
+        return;
+      }
+
+      // Press 'Escape' to close modals or exit theater fullscreen
+      if (e.key === "Escape") {
+        const detailModal = document.getElementById("detail-modal");
+        const compareModal = document.getElementById("compare-modal");
+        if (!detailModal.classList.contains("hidden")) {
+          closeModal("detail-modal");
+          return;
+        }
+        if (!compareModal.classList.contains("hidden")) {
+          closeModal("compare-modal");
+          return;
+        }
+        if (document.body.classList.contains("is-theater-fullscreen")) {
+          toggleFullscreen();
+          return;
+        }
+      }
+
+      // In Draw mode, press 'Space' or 'Enter' to draw next card
+      const drawView = document.getElementById("view-draw");
+      if (!drawView.classList.contains("hidden") && (e.code === "Space" || e.key === "Enter")) {
+        // Avoid double-triggering if focus is already on a button
+        if (tag === "BUTTON") return;
+        e.preventDefault();
+        drawRandomCard();
+      }
+    });
+
+    // Synthesize gentle storybook sound effects via Web Audio API (zero external assets)
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContextClass();
+        }
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+
+        if (type === "shuffle") {
+          // Soft card flutter clicks
+          [0, 0.07, 0.14].forEach((offset, idx) => {
+            const osc = ctxOsc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(220 + idx * 55, now + offset);
+            osc.frequency.exponentialRampToValueAtTime(110, now + offset + 0.05);
+            gain.gain.setValueAtTime(0.08, now + offset);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.055);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + offset);
+            osc.stop(now + offset + 0.06);
+          });
+        } else if (type === "reveal") {
+          // Warm uplifting chime (C5 - E5 - G5)
+          [523.25, 659.25, 783.99].forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+            gain.gain.setValueAtTime(0.09, now + idx * 0.06);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.35);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.06);
+            osc.stop(now + idx * 0.06 + 0.36);
+          });
+        } else if (type === "pop") {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(480, now);
+          osc.frequency.exponentialRampToValueAtTime(640, now + 0.08);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        }
+      } catch (e) {
+        // Ignore audio errors on restricted devices
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById("sound-icon").textContent = soundEnabled ? "🔊" : "🔇";
+      document.getElementById("sound-label").textContent = soundEnabled ? "音效開" : "已靜音";
+      if (soundEnabled) playSound("pop");
+    }
+
+    function showToast(msg, icon = "✨") {
+      const toast = document.getElementById("toast");
+      document.getElementById("toast-msg").textContent = msg;
+      document.getElementById("toast-icon").textContent = icon;
+      toast.classList.remove("opacity-0");
+      toast.classList.add("opacity-100");
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.classList.remove("opacity-100");
+        toast.classList.add("opacity-0");
+      }, 2400);
+    }
+
+    // =========================================================================
+    // 4. CARD HTML BUILDER (Shared across Draw, Modal, Compare)
+    // =========================================================================
+    function buildFullCardHTML(kid, options = {}) {
+      const theme = ZONE_THEMES[kid.zone];
+      const hideDetails = options.mystery === true;
+      const isCompactModal = options.compactModal === true;
+
+      return `
+        <div class="border-2 ${theme.border} rounded-3xl overflow-hidden bg-white">
+          <!-- Card Header -->
+          <div class="${theme.headerBg} px-4 sm:px-5 py-2.5 sm:py-3 border-b ${theme.border} flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="${theme.badgeBg} text-white font-storybook font-black text-sm sm:text-base px-2.5 py-0.5 rounded-xl shadow-sm">
+                #${kid.id}
+              </span>
+              <div>
+                <div class="card-zoom-sub flex items-center gap-1.5 text-xs font-bold text-stone-600">
+                  <span class="text-base">${kid.flag}</span>
+                  <span>${kid.country}｜${kid.city}</span>
+                </div>
+                <h3 class="card-zoom-title font-storybook text-lg sm:text-xl font-black text-stone-900 leading-tight">
+                  ${kid.name} <span class="text-sm font-bold text-stone-500">（${kid.age}）</span>
+                </h3>
+              </div>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-black border ${theme.pill}">
+              ${kid.zoneName}
+            </span>
+          </div>
+
+          <!-- Highlighted Top Block: Daily Cost -->
+          <div class="px-4 sm:px-5 pt-2.5">
+            <div class="card-zoom-cost ${theme.costBg} rounded-xl px-3.5 py-2 shadow-sm flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 font-storybook font-black text-xs sm:text-sm">
+                <span class="text-lg">💰</span>
+                <span>每日生活費</span>
+              </div>
+              <div class="font-storybook text-base sm:text-lg font-black tracking-wide">
+                ${kid.dailyCost}
+              </div>
+            </div>
+          </div>
+
+          <!-- 7 Life Dimensions (2-col grid on iPad/Desktop landscape so zero vertical scroll is needed) -->
+          <div class="card-zoom-list p-4 sm:px-5 sm:py-3 text-xs sm:text-[13.5px] leading-snug flex-1 flex flex-col justify-center">
+            ${hideDetails ? `
+              <div class="py-8 px-4 text-center bg-amber-50/70 rounded-2xl border-2 border-dashed border-amber-300 space-y-2.5">
+                <div class="text-3xl">🕵️‍♂️</div>
+                <p class="font-storybook font-black text-lg text-stone-800">生活細節已隱藏！</p>
+                <p class="text-xs sm:text-sm text-stone-600">
+                  請全班根據「${kid.country}」與「${kid.dailyCost}」，猜猜看${kid.name}的居住、飲食與上學生活是什麼樣子？
+                </p>
+                <button onclick="toggleMysteryMode()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow-sm transition">
+                  👁️ 立即揭曉全部生活條件
+                </button>
+              </div>
+            ` : `
+              <div class="${isCompactModal ? 'grid grid-cols-1 gap-1.5' : 'card-items-grid grid grid-cols-1 gap-1.5'}">
+                <div class="card-zoom-item p-2 rounded-xl bg-stone-50/90 border border-stone-100 flex items-start gap-2">
+                  <span class="text-sm shrink-0 mt-0.5">🏠</span>
+                  <div><strong class="text-stone-900">居住：</strong><span class="text-stone-700">${kid.housing}</span></div>
+                </div>
+                <div class="card-zoom-item p-2 rounded-xl bg-stone-50/90 border border-stone-100 flex items-start gap-2">
+                  <span class="text-sm shrink-0 mt-0.5">🍚</span>
+                  <div><strong class="text-stone-900">飲食：</strong><span class="text-stone-700">${kid.food}</span></div>
+                </div>
+                <div class="card-zoom-item p-2 rounded-xl bg-stone-50/90 border border-stone-100 flex items-start gap-2">
+                  <span class="text-sm shrink-0 mt-0.5">🎒</span>
+                  <div><strong class="text-stone-900">上學：</strong><span class="text-stone-700">${kid.school}</span></div>
+                </div>
+                <div class="card-zoom-item p-2 rounded-xl bg-stone-50/90 border border-stone-100 flex items-start gap-2">
+                  <span class="text-sm shrink-0 mt-0.5">⏰</span>
+                  <div><strong class="text-stone-900">課後：</strong><span class="text-stone-700">${kid.afterSchool}</span></div>
+                </div>
+                <div class="card-zoom-item p-2 rounded-xl bg-stone-50/90 border border-stone-100 flex items-start gap-2">
+                  <span class="text-sm shrink-0 mt-0.5">🏥</span>
+                  <div><strong class="text-stone-900">醫療：</strong><span class="text-stone-700">${kid.medical}</span></div>
+                </div>
+                <div class="card-zoom-item p-2 rounded-xl bg-stone-50/90 border border-stone-100 flex items-start gap-2">
+                  <span class="text-sm shrink-0 mt-0.5">💍</span>
+                  <div><strong class="text-stone-900">結婚：</strong><span class="text-stone-700">${kid.marriage}</span></div>
+                </div>
+                <div class="${isCompactModal ? '' : 'card-wish-span'} card-zoom-item p-2.5 rounded-xl bg-amber-50/90 border border-amber-200/80 flex items-start gap-2">
+                  <span class="text-sm shrink-0 mt-0.5">💭</span>
+                  <div><strong class="text-amber-950">心願：</strong><span class="text-stone-800 font-medium">${kid.wish}</span></div>
+                </div>
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 5. MODE 1: RANDOM DRAW LOGIC
+    // =========================================================================
+    function updateDeckUI() {
+      const noRepeat = document.getElementById("toggle-norepeat").checked;
+      const badge = document.getElementById("deck-status-badge");
+      if (noRepeat) {
+        badge.classList.remove("opacity-50");
+        document.getElementById("remaining-count").textContent = remainingIds.length;
+      } else {
+        badge.classList.add("opacity-50");
+        document.getElementById("remaining-count").textContent = "∞";
+      }
+    }
+
+    function handleModeToggleChange() {
+      updateDeckUI();
+      const noRepeat = document.getElementById("toggle-norepeat").checked;
+      showToast(noRepeat ? "已切換為「不重複抽卡」模式" : "已切換為「可重複隨機抽卡」模式", "🎴");
+    }
+
+    function drawRandomCard() {
+      const noRepeat = document.getElementById("toggle-norepeat").checked;
+      let pool = noRepeat ? remainingIds : KIDS_DATA.map(k => k.id);
+
+      if (noRepeat && pool.length === 0) {
+        showToast("30 張身份卡已全部抽完！請點擊「重置牌堆」重新開始。", "🎉");
+        return;
+      }
+
+      const randomIndex = Math.floor(Math.random() * pool.length);
+      const chosenId = pool[randomIndex];
+      const kid = KIDS_DATA.find(k => k.id === chosenId);
+
+      if (noRepeat) {
+        remainingIds = remainingIds.filter(id => id !== chosenId);
+        updateDeckUI();
+      }
+
+      currentCard = kid;
+      const flipEl = document.getElementById("flip-card");
+      const frontEl = document.getElementById("drawn-card-front");
+      const actionsEl = document.getElementById("drawn-actions");
+
+      // Play shuffle sound & animation
+      playSound("shuffle");
+      flipEl.classList.remove("is-flipped");
+      flipEl.classList.remove("is-shuffling");
+      void flipEl.offsetWidth; // Trigger reflow
+      flipEl.classList.add("is-shuffling");
+
+      setTimeout(() => {
+        frontEl.innerHTML = buildFullCardHTML(kid, { mystery: mysteryMode });
+        flipEl.classList.remove("is-shuffling");
+        flipEl.classList.add("is-flipped");
+        isFlipped = true;
+        actionsEl.classList.remove("hidden");
+        playSound("reveal");
+
+        // Auto-record if not already in history during no-repeat mode
+        if (noRepeat && !drawnHistory.some(item => item.id === kid.id)) {
+          drawnHistory.unshift(kid);
+          renderHistory();
+        }
+      }, 420);
+    }
+
+    function flipToBack() {
+      playSound("pop");
+      document.getElementById("flip-card").classList.remove("is-flipped");
+      document.getElementById("drawn-actions").classList.add("hidden");
+      isFlipped = false;
+    }
+
+    function toggleMysteryMode() {
+      mysteryMode = !mysteryMode;
+      playSound("pop");
+      const btn = document.getElementById("btn-mystery");
+      const text = document.getElementById("mystery-text");
+      const icon = document.getElementById("mystery-icon");
+
+      if (mysteryMode) {
+        btn.classList.remove("bg-white", "text-stone-700", "border-stone-200");
+        btn.classList.add("bg-amber-500", "text-white", "border-amber-600");
+        icon.textContent = "🙈";
+        text.textContent = "猜謎模式中（點擊顯示細節）";
+      } else {
+        btn.classList.add("bg-white", "text-stone-700", "border-stone-200");
+        btn.classList.remove("bg-amber-500", "text-white", "border-amber-600");
+        icon.textContent = "👁️";
+        text.textContent = "隱藏生活細節（猜猜看）";
+      }
+
+      if (currentCard && isFlipped) {
+        document.getElementById("drawn-card-front").innerHTML = buildFullCardHTML(currentCard, { mystery: mysteryMode });
+      }
+    }
+
+    function resetDeck() {
+      remainingIds = KIDS_DATA.map(k => k.id);
+      updateDeckUI();
+      flipToBack();
+      currentCard = null;
+      playSound("shuffle");
+      showToast("牌堆已重置為完整 30 張！", "🔄");
+    }
+
+    function addCurrentToHistory() {
+      if (!currentCard) return;
+      if (drawnHistory.some(item => item.id === currentCard.id)) {
+        showToast(`#${currentCard.id} ${currentCard.name} 已經在紀錄清單中囉！`, "📌");
+        return;
+      }
+      drawnHistory.unshift(currentCard);
+      renderHistory();
+      playSound("pop");
+      showToast(`已將 #${currentCard.id} ${currentCard.name} 加入紀錄`, "📌");
+    }
+
+    function clearHistory() {
+      drawnHistory = [];
+      renderHistory();
+      playSound("pop");
+      showToast("已清空抽卡紀錄", "🗑️");
+    }
+
+    function renderHistory() {
+      const listEl = document.getElementById("history-list");
+      document.getElementById("history-count").textContent = drawnHistory.length;
+
+      if (drawnHistory.length === 0) {
+        listEl.innerHTML = `
+          <p class="text-xs text-stone-400 text-center py-6 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
+            尚未加入紀錄，抽卡後可自動或手動記錄學生抽到的身份！
+          </p>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = drawnHistory.map((kid, index) => {
+        const theme = ZONE_THEMES[kid.zone];
+        return `
+          <div onclick="openDetailModal('${kid.id}')" class="cursor-pointer p-2.5 rounded-2xl bg-white hover:bg-amber-50/70 border border-stone-200/80 transition flex items-center justify-between gap-2 shadow-xs">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-xs font-bold text-stone-400 w-5 shrink-0">${drawnHistory.length - index}.</span>
+              <span class="${theme.badgeBg} text-white text-xs font-black px-2 py-0.5 rounded-lg shrink-0">#${kid.id}</span>
+              <div class="truncate">
+                <div class="text-xs sm:text-sm font-black text-stone-800 truncate">
+                  ${kid.flag} ${kid.country}｜${kid.name}
+                </div>
+                <div class="text-[11px] font-bold ${theme.accentText}">${kid.dailyCost}</div>
+              </div>
+            </div>
+            <span class="text-xs text-stone-400 shrink-0">檢視 ›</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // =========================================================================
+    // 6. MODE 2: GALLERY & SIDE-BY-SIDE COMPARISON
+    // =========================================================================
+    function setGalleryFilter(zone) {
+      currentGalleryFilter = zone;
+      currentGalleryPage = 1;
+      playSound("pop");
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        const isTarget = btn.getAttribute("data-filter") === zone;
+        if (isTarget) {
+          btn.classList.add("ring-2", "ring-offset-1", "ring-stone-800", "scale-[1.02]");
+        } else {
+          btn.classList.remove("ring-2", "ring-offset-1", "ring-stone-800", "scale-[1.02]");
+        }
+      });
+      renderGallery();
+    }
+
+    function changeGalleryPage(newPage) {
+      currentGalleryPage = newPage;
+      playSound("pop");
+      renderGallery();
+    }
+
+    function renderGallery() {
+      const sortVal = document.getElementById("sort-select").value;
+      let list = [...KIDS_DATA];
+
+      if (currentGalleryFilter !== "ALL") {
+        list = list.filter(k => k.zone === currentGalleryFilter);
+      }
+
+      if (sortVal === "cost-desc") {
+        list.sort((a, b) => b.costValue - a.costValue);
+      } else if (sortVal === "cost-asc") {
+        list.sort((a, b) => a.costValue - b.costValue);
+      } else {
+        list.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+      }
+
+      const totalItems = list.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / GALLERY_PAGE_SIZE));
+      if (currentGalleryPage > totalPages) currentGalleryPage = totalPages;
+
+      const startIdx = (currentGalleryPage - 1) * GALLERY_PAGE_SIZE;
+      const endIdx = Math.min(startIdx + GALLERY_PAGE_SIZE, totalItems);
+      const pageItems = list.slice(startIdx, endIdx);
+
+      // Update pagination bar
+      const pageInfoEl = document.getElementById("gallery-page-info");
+      const pageBtnsEl = document.getElementById("gallery-page-buttons");
+      if (pageInfoEl && pageBtnsEl) {
+        pageInfoEl.textContent = `顯示第 ${totalItems === 0 ? 0 : startIdx + 1}–${endIdx} 張，共 ${totalItems} 張（第 ${currentGalleryPage} / ${totalPages} 頁）`;
+
+        let btnsHTML = `
+          <button onclick="changeGalleryPage(${Math.max(1, currentGalleryPage - 1)})" ${currentGalleryPage === 1 ? "disabled" : ""} class="px-3 py-1 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition">
+            ← 上一頁
+          </button>
+        `;
+        for (let p = 1; p <= totalPages; p++) {
+          const active = p === currentGalleryPage;
+          btnsHTML += `
+            <button onclick="changeGalleryPage(${p})" class="w-8 h-7 rounded-xl text-xs font-black transition ${active ? "bg-stone-800 text-white shadow-xs" : "bg-white border border-stone-200 text-stone-600 hover:bg-stone-100"}">
+              ${p}
+            </button>
+          `;
+        }
+        btnsHTML += `
+          <button onclick="changeGalleryPage(${Math.min(totalPages, currentGalleryPage + 1)})" ${currentGalleryPage === totalPages ? "disabled" : ""} class="px-3 py-1 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition">
+            下一頁 →
+          </button>
+        `;
+        pageBtnsEl.innerHTML = btnsHTML;
+      }
+
+      const grid = document.getElementById("gallery-grid");
+      grid.innerHTML = pageItems.map(kid => {
+        const theme = ZONE_THEMES[kid.zone];
+        const isSelected = compareSelection.includes(kid.id);
+
+        return `
+          <article class="storybook-card rounded-2xl overflow-hidden flex flex-col justify-between min-h-0 transition hover:shadow-md border-2 ${isSelected ? 'border-amber-500 ring-2 ring-amber-300' : theme.border}">
+            <div class="min-h-0 flex flex-col">
+              <!-- Header -->
+              <div class="${theme.headerBg} px-3.5 py-2 border-b ${theme.border} flex items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <span class="${theme.badgeBg} text-white font-storybook font-black text-xs px-2 py-0.5 rounded-lg shrink-0">#${kid.id}</span>
+                  <span class="text-sm shrink-0">${kid.flag}</span>
+                  <span class="font-bold text-xs text-stone-700 truncate">${kid.country}｜${kid.city}</span>
+                </div>
+                <span class="text-[11px] font-black px-2 py-0.5 rounded-full border shrink-0 ${theme.pill}">${kid.zone}區</span>
+              </div>
+
+              <!-- Body Summary -->
+              <div class="p-3 space-y-1.5 overflow-hidden">
+                <div class="flex items-center justify-between gap-2">
+                  <h4 class="font-storybook text-base font-black text-stone-900 truncate">
+                    ${kid.name} <span class="text-xs font-bold text-stone-500">（${kid.age}）</span>
+                  </h4>
+                  <span class="${theme.costBg} rounded-lg px-2 py-0.5 text-xs font-black shrink-0">
+                    💰 ${kid.dailyCost}
+                  </span>
+                </div>
+
+                <p class="text-xs text-stone-600 line-clamp-1">
+                  <strong>🏠 居住：</strong>${kid.housing}
+                </p>
+                <p class="text-xs text-stone-600 line-clamp-1">
+                  <strong>🎒 上學：</strong>${kid.school}
+                </p>
+                <p class="text-xs text-amber-900 bg-amber-50/80 px-2 py-1 rounded-lg line-clamp-1">
+                  <strong>💭 心願：</strong>${kid.wish}
+                </p>
+              </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="px-3 pb-2.5 pt-1 flex items-center gap-2 shrink-0">
+              <button onclick="openDetailModal('${kid.id}')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold transition active:scale-95">
+                🔍 查看完整 8 項
+              </button>
+              <button onclick="toggleCompareSelect('${kid.id}')" class="py-1.5 px-2.5 rounded-xl text-xs font-bold border transition active:scale-95 ${isSelected ? 'bg-amber-500 text-white border-amber-600' : 'bg-white hover:bg-amber-50 text-stone-700 border-stone-200'}">
+                ${isSelected ? '✓ 已選比較' : '+ 加入比較'}
+              </button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function toggleCompareSelect(id) {
+      playSound("pop");
+      if (compareSelection.includes(id)) {
+        compareSelection = compareSelection.filter(item => item !== id);
+      } else {
+        if (compareSelection.length >= 2) {
+          compareSelection.shift(); // Replace oldest selection
+        }
+        compareSelection.push(id);
+      }
+      updateCompareTray();
+      renderGallery();
+    }
+
+    function clearCompareSelection() {
+      compareSelection = [];
+      updateCompareTray();
+      renderGallery();
+      playSound("pop");
+    }
+
+    function updateCompareTray() {
+      const slot1 = document.getElementById("compare-slot-1");
+      const slot2 = document.getElementById("compare-slot-2");
+      const btn = document.getElementById("btn-open-compare");
+
+      if (compareSelection[0]) {
+        const k1 = KIDS_DATA.find(k => k.id === compareSelection[0]);
+        slot1.textContent = `#${k1.id} ${k1.flag} ${k1.country} ${k1.name}`;
+        slot1.className = "px-2.5 py-1 rounded-lg bg-amber-500 text-white font-black";
+      } else {
+        slot1.textContent = "未選擇卡片 1";
+        slot1.className = "px-2.5 py-1 rounded-lg bg-white border border-amber-200 text-stone-500 font-bold";
+      }
+
+      if (compareSelection[1]) {
+        const k2 = KIDS_DATA.find(k => k.id === compareSelection[1]);
+        slot2.textContent = `#${k2.id} ${k2.flag} ${k2.country} ${k2.name}`;
+        slot2.className = "px-2.5 py-1 rounded-lg bg-amber-500 text-white font-black";
+      } else {
+        slot2.textContent = "未選擇卡片 2";
+        slot2.className = "px-2.5 py-1 rounded-lg bg-white border border-amber-200 text-stone-500 font-bold";
+      }
+
+      btn.disabled = compareSelection.length < 2;
+    }
+
+    function openDetailModal(id) {
+      const kid = KIDS_DATA.find(k => k.id === id);
+      if (!kid) return;
+      playSound("pop");
+      document.getElementById("detail-modal-content").innerHTML = buildFullCardHTML(kid, { mystery: false });
+      document.getElementById("detail-modal").classList.remove("hidden");
+    }
+
+    function openCompareModal() {
+      if (compareSelection.length < 2) return;
+      playSound("reveal");
+      const k1 = KIDS_DATA.find(k => k.id === compareSelection[0]);
+      const k2 = KIDS_DATA.find(k => k.id === compareSelection[1]);
+
+      document.getElementById("compare-modal-body").innerHTML = `
+        <div>${buildFullCardHTML(k1, { mystery: false, compactModal: true })}</div>
+        <div>${buildFullCardHTML(k2, { mystery: false, compactModal: true })}</div>
+      `;
+      document.getElementById("compare-modal").classList.remove("hidden");
+    }
+
+    function closeModal(modalId) {
+      playSound("pop");
+      document.getElementById(modalId).classList.add("hidden");
+    }
+
+    function closeModalOnBackdrop(event, modalId) {
+      if (event.target.id === modalId) {
+        closeModal(modalId);
+      }
+    }
+
+    // =========================================================================
+    // 7. MODE 3: CLASSROOM STAND-UP ACTIVITY GUIDE
+    // =========================================================================
+    function renderActivityQuestion() {
+      const q = ACTIVITY_QUESTIONS[currentQuestionIdx];
+      document.getElementById("question-progress").textContent = `第 ${currentQuestionIdx + 1} 題 / 共 ${ACTIVITY_QUESTIONS.length} 題`;
+      document.getElementById("q-emoji").textContent = q.emoji;
+      document.getElementById("q-title").textContent = q.title;
+      document.getElementById("q-hint").textContent = q.hint;
+
+      // Hide stat panel on question switch
+      document.getElementById("q-stat-panel").classList.add("hidden");
+      document.getElementById("q-match-bar").style.width = "0%";
+
+      // Dots indicator
+      const dotsEl = document.getElementById("q-dots");
+      dotsEl.innerHTML = ACTIVITY_QUESTIONS.map((_, idx) => `
+        <button onclick="goToQuestion(${idx})" class="w-2.5 h-2.5 rounded-full transition-all ${idx === currentQuestionIdx ? 'bg-stone-800 w-6' : 'bg-stone-300 hover:bg-stone-400'}"></button>
+      `).join("");
+    }
+
+    function revealQuestionStat() {
+      const q = ACTIVITY_QUESTIONS[currentQuestionIdx];
+      const count = q.matchedIds.length;
+      const percent = Math.round((count / 30) * 100);
+
+      document.getElementById("q-match-count").textContent = count;
+      document.getElementById("q-match-percent").textContent = percent;
+      document.getElementById("q-discussion").textContent = q.discussion;
+
+      const badgesEl = document.getElementById("q-match-badges");
+      badgesEl.innerHTML = q.matchedIds.map(id => {
+        const kid = KIDS_DATA.find(k => k.id === id);
+        const theme = ZONE_THEMES[kid.zone];
+        return `
+          <button onclick="openDetailModal('${kid.id}')" class="px-2.5 py-1 rounded-xl text-xs font-bold border ${theme.pill} hover:opacity-80 transition">
+            #${kid.id} ${kid.country}${kid.name}
+          </button>
+        `;
+      }).join("");
+
+      const panel = document.getElementById("q-stat-panel");
+      panel.classList.remove("hidden");
+      playSound("reveal");
+
+      setTimeout(() => {
+        document.getElementById("q-match-bar").style.width = `${percent}%`;
+      }, 60);
+    }
+
+    function changeQuestion(delta) {
+      playSound("pop");
+      currentQuestionIdx = (currentQuestionIdx + delta + ACTIVITY_QUESTIONS.length) % ACTIVITY_QUESTIONS.length;
+      renderActivityQuestion();
+    }
+
+    function goToQuestion(idx) {
+      playSound("pop");
+      currentQuestionIdx = idx;
+      renderActivityQuestion();
+    }
+
+    // =========================================================================
+    // 8. TAB NAVIGATION & INITIALIZATION
+    // =========================================================================
+    function switchMode(mode) {
+      playSound("pop");
+      const modes = ["draw", "gallery", "activity"];
+      modes.forEach(m => {
+        const view = document.getElementById(`view-${m}`);
+        const tab = document.getElementById(`tab-${m}`);
+        if (m === mode) {
+          view.classList.remove("hidden");
+          tab.classList.add("bg-white", "text-stone-900", "shadow-sm");
+          tab.classList.remove("text-stone-600");
+        } else {
+          view.classList.add("hidden");
+          tab.classList.remove("bg-white", "text-stone-900", "shadow-sm");
+          tab.classList.add("text-stone-600");
+        }
+      });
+
+      if (mode === "gallery") renderGallery();
+      if (mode === "activity") renderActivityQuestion();
+    }
+
+    // Initialize on load
+    window.addEventListener("DOMContentLoaded", () => {
+      updateDeckUI();
+      renderGallery();
+      renderActivityQuestion();
+    });
+  </script>
+</body>
+</html>
